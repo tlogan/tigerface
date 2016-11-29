@@ -39,7 +39,6 @@ $(function() {
 
   //handle all state changes
   state.addHandler('index', {
-
     token: function(token) {
       $content.empty();
       if (token) {
@@ -57,8 +56,6 @@ $(function() {
         renderHomeView(user);
       }
     }
-
-
   });
 
 

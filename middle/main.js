@@ -144,6 +144,16 @@ server.get("/user", jsonParse, (req, res, next) => {
   }
 });
 
+server.get("/save", jsonParse, (req, res, next) => {
+  db.save();
+  res.redirect('/');
+});
+
+server.get("/load", jsonParse, (req, res, next) => {
+  db.load();
+  res.redirect('/');
+});
+
 server.use((err, req, res, next) => {
   if (err.statusCode !== undefined) {
     console.log("Error: ", err.body);

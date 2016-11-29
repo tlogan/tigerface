@@ -1,5 +1,7 @@
 'use strict';
 var _ = require('lodash');
+var fs = require('fs');
+var path = require('path');
 
 var syntax = require('./syntax');
 var bigTable = {};
@@ -40,8 +42,37 @@ let insertUser = (user => {
 
 let getUser = (index => get('user', index));
 
+let tigerfaceFile = path.resolve(__dirname + '/../tigerface.json');
+let save = (() => {
+
+    
+  fs.writeFile(tigerfaceFile, JSON.stringify(bigTable), err => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log("write succeeded");
+    }
+  });
+});
+
+
+let load = (() => {
+  fs.readFile(tigerfaceFile, 'utf8', (err, data) => {
+    if (err) {
+      console.log(err);
+    } else {
+      bigTable = JSON.parse(data);
+      console.log("load succeeded");
+    }
+  });
+});
+
+
 module.exports.insert = insert;
 module.exports.get = get;
 
 module.exports.insertUser = insertUser;
 module.exports.getUser = getUser;
+
+module.exports.save = save;
+module.exports.load = load;
