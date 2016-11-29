@@ -1,0 +1,79 @@
+html {
+  overflow-y: hidden;
+}
+
+body {
+  margin: 0;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 12pt;
+  background-color: #fff7de;
+}
+
+input[type=text], input[type=password] {
+  border:1px;
+  border-style:solid;
+  border-color: #999;
+  border-radius:2px;
+  height: 30px;
+  width: 300px;
+  padding-left:10px;
+  margin-top: 3px; 
+  margin-bottom: 3px; 
+  font-family: "Courier New", Courier, monospace;
+  font-size: 12pt;
+  background-color: white;
+}
+
+button {
+  border:1px;
+  border-style:solid;
+  border-color: black;
+  background-color: #ccc;
+  border-radius:2px;
+  height: 30px;
+  width: 200px;
+  padding-left:10px;
+  margin-top: 3px; 
+  margin-bottom: 3px; 
+  font-family: "Courier New", Courier, monospace;
+  text-align: center;
+  font-size: 12pt;
+  cursor: pointer;
+}
+
+button#log_in_button {
+  border-color: #dd6005;
+  background-color: #ffc107;
+  color: black;
+  font-weight: bold;
+}
+
+button#sign_up_button {
+  border-color: #0560dd;
+  background-color: #07c1ff;
+  color: white;
+  font-weight: bold;
+}
+
+.heading {
+  font-size: 16pt;
+  padding-bottom: 2px;
+  font-weight: bold;
+}
+
+.panel {
+  display: inline-block;
+  margin: 6px;
+  padding: 10px;
+}
+
+#start_section {
+  padding-left: 200px;
+  padding-top: 100px;
+}
+
+#start_section .panel {
+  margin-bottom: 20px;
+}
+
+

@@ -1,0 +1,5 @@
+$(function() {
+
+  alert("Profile page!");
+
+});

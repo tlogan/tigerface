@@ -1,0 +1,27 @@
+{
+  "name": "tigerface",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.14.0",
+    "jsrsasign": "^6.2.2",
+    "lodash": "^4.16.1",
+    "q": "^1.4.1",
+    "request": "^2.79.0",
+    "rx": "^4.1.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tlogan/tigerface.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "homepage": "https://github.com/tlogan/tigerface"
+}
