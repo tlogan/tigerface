@@ -2,7 +2,7 @@
 
 var common = (function() {
 
-  var http = function(method, useJson, bearerToken) {return function(url, data, success, error) {
+  var http = function(method, useJson) { return function(bearerToken) { return function(url, data, success, error) {
     var headers = _.assign({}, bearerToken ? { 'Authorization': 'Bearer ' + bearerToken} : {});
     return $.ajax({
       cache: false,
@@ -24,19 +24,22 @@ var common = (function() {
         }
       }
     });
-  }};
+  }}};
 
 
-  var get = http('get', true, null); 
 
-  var post = http('post', true, null); 
+  var authGet = http('get', true); 
+  var authPost = http('post', true); 
 
-
+  var get = authGet(null); 
+  var post = authPost(null); 
 
   return {
     http: http, 
+    authGet: authGet,
+    authPost: authPost,
     get: get,
-    post: post,
+    post: post
   };
 
 }());

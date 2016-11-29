@@ -21,7 +21,15 @@ $(function() {
           view.input({id: 'log_in_password', type: 'password', placeholder: 'password'})
         )
       ), 
-      view.button({id: 'log_in_button', text: 'Log in'})
+      view.button({id: 'log_in_button', text: 'Log in'}).click(function() {
+        var username = $(this).prev().find('input#log_in_username').val();
+        var password = $(this).prev().find('input#log_in_password').val();
+        var $p = common.post('login', {username: username, password: password});
+        $p.then(function(result) {
+          state.update('token', result.token);
+        });
+      })
+
     );
   }
 
@@ -67,13 +75,23 @@ $(function() {
     token: function(token) {
       $content.empty();
       if (token) {
-        $content.text("Check out the latest notes on TigerFace");
+        $content.append(
+          view.div().text("You are logged into TigerFace"),
+          view.button({id: 'log_out_button', text: 'Log out'}).click(function() {
+            var $p = common.post('logout');
+            $p.then(function() {
+              state.update('token', null);
+            });
+          })
+        );
       } else {
-        $content.text("Please login or signup!");
         $content.empty().append(mkStartDiv());
       }
     }
 
   });
+
+
+
 
 });

@@ -40,6 +40,17 @@ var serveFile = (fileName => ((req, res, next) => {
 
 }));
 
+var bearerTokenFromReq = (req => {
+  var authHeader = req.headers.authorization;
+  var prefix = "Bearer ";
+  var startIndex = authHeader ? authHeader.indexOf(prefix) : -1;
+  return startIndex == 0 ? authHeader.substring(prefix.length) : "" 
+});
+
+var cookieTokenFromReq = (req => {
+  return req.cookies[auth.cookieName];
+})
+
 
 //serve static files by filename
 server.use('/', express.static(path.resolve(__dirname + '/../front/')));
@@ -48,25 +59,12 @@ server.use('/', express.static(path.resolve(__dirname + '/../front/')));
 server.get("/$", jsonParse, serveFile("index.html"));
 server.get("/profile/*", jsonParse, serveFile("profile.html"));
 
-
-//serve auth tokens
-server.get("/token", jsonParse, (req, res, next) => {
-  var cookieToken = req.cookies[auth.cookieName];
-  //extract user record from token
-  var user = auth.cookieAuth.user(cookieToken)
-  if(user){
-    let bearerToken = auth.bearerAuth.mkUserToken(user);
-    res.json({token: bearerToken});
-  } else {
-    res.json({token: ""});
-  }
-});
-
 server.post("/signup", jsonParse, (req, res, next) => {
   var body = req.body;
   if (!body.fullName) {
     return next("full name must contain one or more letters, numbers, hyphens, or spaces only.");
   }
+
   if (!syntax.hasUsernameSyntax(body.username)) {
     return next("username must contain one or more lowercase letters or numbers only.");
   }
@@ -79,25 +77,68 @@ server.post("/signup", jsonParse, (req, res, next) => {
   db.insertUser({username: body.username, fullName: body.fullName, hashedPass: hashedPass});
   let user = db.getUser(body.username); 
 
-
   //send back auth tokens
-  let cookieToken = auth.cookieAuth.mkUserToken(user);
+  let cookieToken = auth.cookieAuth.mkToken(user.username);
   res.cookie(auth.cookieName, cookieToken, {httpOnly: true});
 
-  let bearerToken = auth.bearerAuth.mkUserToken(user);
+  let bearerToken = auth.bearerAuth.mkToken(user.username);
   res.json({token: bearerToken});
 
 });
+
+server.post("/logout", jsonParse, (req, res, next) => {
+  //clear auth cookie
+  res.clearCookie(auth.cookieName, {httpOnly: true});
+  res.json({});
+
+});
+
+server.post("/login", jsonParse, (req, res, next) => {
+  var body = req.body;
+
+  if (!syntax.hasUsernameSyntax(body.username)) {
+    return next("username must contain one or more lowercase letters or numbers only.");
+  }
+
+  if (!syntax.hasPasswordSyntax(body.password)) {
+    return next("password must contain one or more lowercase letters or numbers only.");
+  }
+
+  let user = db.getUser(body.username); 
+
+  if (!auth.verifyPassword(user.hashedPass, body.password)) {
+    return next("username or password does not match our records.");
+  }
+
+  //send back auth tokens
+  let cookieToken = auth.cookieAuth.mkToken(user.username);
+  res.cookie(auth.cookieName, cookieToken, {httpOnly: true});
+
+  let bearerToken = auth.bearerAuth.mkToken(user.username);
+  res.json({token: bearerToken});
+
+});
+
+
+//serve auth tokens
+server.get("/token", jsonParse, (req, res, next) => {
+  var cookieToken = cookieTokenFromReq(req);
+  //extract user record from token
+  var username = auth.cookieAuth.username(cookieToken)
+  if (username){
+    let bearerToken = auth.bearerAuth.mkToken(username);
+    res.json({token: bearerToken});
+  } else {
+    res.json({token: ""});
+  }
+});
+
 
 server.use((err, req, res, next) => {
   if (err.statusCode !== undefined) {
     console.log("Error: ", err.body);
     res.status(err.statusCode);
     res.json(err.body);
-  } else if (err.code !== undefined){
-    console.log("Error: ", err.response.body);
-    res.status(err.code);
-    res.json(err.response.body);
   } else if (_.isString(err)){
     console.log("Error: ", err);
     res.status(400);
@@ -105,8 +146,7 @@ server.use((err, req, res, next) => {
       "name": "error",
       "errors": [err]
     });
-  }
-  else {
+  } else {
     console.log("Error: ", err);
     res.status(400);
     res.json(err);

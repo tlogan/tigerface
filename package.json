@@ -5,10 +5,13 @@
   "main": "main.js",
   "dependencies": {
     "body-parser": "^1.15.2",
+    "buffer-equal-constant-time": "^1.0.1",
     "cookie-parser": "^1.4.3",
     "express": "^4.14.0",
+    "install": "^0.8.2",
     "jsrsasign": "^6.2.2",
     "lodash": "^4.16.1",
+    "npm": "^4.0.2",
     "q": "^1.4.1",
     "request": "^2.79.0",
     "rx": "^4.1.0"

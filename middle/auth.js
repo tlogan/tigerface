@@ -2,6 +2,7 @@
 var crypto = require('crypto');
 var _ = require('lodash');
 var r = require('jsrsasign');
+var bufferEq = require('buffer-equal-constant-time');
 
 function randomAlphaNumeric(size) {
   var numbers    = '0123456789';
@@ -42,7 +43,6 @@ function verifyPassword(authData, password) {
 
   var workUnits = authData.workUnits || cfg.workUnits || 60;
   var workKey = cfg.workKey || 388;
-  var bufferEq = require('buffer-equal-constant-time');
 
   return bufferEq(
     new Buffer(authData.hash || '', 'base64'), 
@@ -88,12 +88,11 @@ function mkTokenAuth(secret) {
   var alg = 'HS256';
   var typ = 'JWT';
 
-  function mkUserToken(user, data) {
+  function mkToken(username) {
     var now = r.jws.IntDate.get('now');
     var end = r.jws.IntDate.get('now + 1day');
     var payload = {
-      user: user,
-      data: data || {},
+      username: username,
       iss: "tigerface",
       nbf: now,
       iat: now,
@@ -108,11 +107,11 @@ function mkTokenAuth(secret) {
     return token && secret && r.jws.JWS.verifyJWT(token, secret, {alg: [alg]});
   }
 
-  function user(token) {
+  function username(token) {
     if (token && verifyToken(token)) {
       var pl = getPayload(token);
-      if (_.has(pl, 'user') && _.has(pl.user, '_id')) {
-        return pl.user;
+      if (_.has(pl, 'username')) {
+        return pl.username;
       } else {
         return null;
       }
@@ -122,9 +121,9 @@ function mkTokenAuth(secret) {
   }
 
   return {
-    mkUserToken: mkUserToken,
+    mkToken: mkToken,
     verifyToken: verifyToken,
-    user: user 
+    username: username 
   };
 
 }
