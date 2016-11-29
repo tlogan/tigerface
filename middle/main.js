@@ -123,7 +123,7 @@ server.post("/login", jsonParse, (req, res, next) => {
 //serve auth tokens
 server.get("/token", jsonParse, (req, res, next) => {
   var cookieToken = cookieTokenFromReq(req);
-  //extract user record from token
+  //extract username record from token
   var username = auth.cookieAuth.username(cookieToken)
   if (username){
     let bearerToken = auth.bearerAuth.mkToken(username);
@@ -133,6 +133,16 @@ server.get("/token", jsonParse, (req, res, next) => {
   }
 });
 
+server.get("/user", jsonParse, (req, res, next) => {
+  let bearerToken = bearerTokenFromReq(req);
+  let username = auth.bearerAuth.username(bearerToken)
+  if (username){
+    let user = db.getUser(username);
+    res.json({user: user});
+  } else {
+    res.json({user: null});
+  }
+});
 
 server.use((err, req, res, next) => {
   if (err.statusCode !== undefined) {

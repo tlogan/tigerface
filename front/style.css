@@ -1,3 +1,45 @@
+div {
+}
+
+a.navlink {
+  display: inline-block;
+  text-decoration: none;
+  padding: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 12pt; 
+  color: black;
+  cursor: pointer;
+}
+
+a.navlink#home_link {
+  font-weight: bold;
+  color: #f36e21;
+}
+
+a.navlink#profile_link {
+  color: black;
+}
+
+a.navlink#log_out_link {
+  color: gray;
+}
+
+div#window {
+  padding: 10px;
+}
+
+
+#nav {
+  overflow: auto;
+  border-bottom: 1px solid white;
+}
+
+#user_navlink_list {
+  float: right;
+}
+
+
 html {
   overflow-y: hidden;
 }
@@ -39,20 +81,19 @@ button {
   text-align: center;
   font-size: 12pt;
   cursor: pointer;
+  font-weight: bold;
 }
 
 button#log_in_button {
   border-color: #dd6005;
   background-color: #ffc107;
   color: black;
-  font-weight: bold;
 }
 
 button#sign_up_button {
   border-color: #0560dd;
   background-color: #07c1ff;
   color: white;
-  font-weight: bold;
 }
 
 .heading {
