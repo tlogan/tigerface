@@ -14,7 +14,6 @@ let hasUsernameSyntax = username => {
 };
 
 let hasPasswordSyntax = password => {
-  console.log("password: " + password);
   var re = new RegExp("^[a-z0-9]+$");
   var matches = password && password.match(re); 
   return matches && matches.length > 0;

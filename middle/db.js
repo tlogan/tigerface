@@ -37,34 +37,29 @@ let get = ((family, index) => bigTable[family][index]);
 
 let insertUser = (user => {
   return insert('user', user.username, user);
-  console.log("bigTable: " + JSON.stringify(bigTable));
 });
 
 let getUser = (index => get('user', index));
 
 let tigerfaceFile = path.resolve(__dirname + '/../tigerface.json');
 let save = (() => {
-
-    
-  fs.writeFile(tigerfaceFile, JSON.stringify(bigTable), err => {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log("write succeeded");
-    }
-  });
+  try {
+    fs.writeFileSync(tigerfaceFile, JSON.stringify(bigTable));
+    console.log("saved data");
+  } catch(err) {
+    console.log(err);
+  }
 });
 
 
 let load = (() => {
-  fs.readFile(tigerfaceFile, 'utf8', (err, data) => {
-    if (err) {
-      console.log(err);
-    } else {
-      bigTable = JSON.parse(data);
-      console.log("load succeeded");
-    }
-  });
+  try {
+    let data = fs.readFileSync(tigerfaceFile, 'utf8');
+    bigTable = JSON.parse(data);
+    console.log("loaded data");
+  } catch(err) {
+    console.log(err);
+  }
 });
 
 

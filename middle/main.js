@@ -173,6 +173,17 @@ server.use((err, req, res, next) => {
   }
 });
 
+
+db.load();
+
+process.on ('SIGINT', () => {
+  process.exit (0);
+});
+
+process.on('exit', (code) => {
+  db.save();
+});
+
 //serve data to authorized users
 server.listen(3000, () => {
     console.log('Tigerface listening on port 3000!\n');
