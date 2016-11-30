@@ -73,6 +73,10 @@ server.post("/signup", jsonParse, (req, res, next) => {
     return next("password must contain one or more lowercase letters or numbers only.");
   }
 
+  if (db.getUser(body.username)) {
+    return next("username already exists");
+  }
+
   let hashedPass = auth.hashPassword(body.password);
   db.insertUser({username: body.username, fullName: body.fullName, hashedPass: hashedPass});
   let user = db.getUser(body.username); 
@@ -141,6 +145,18 @@ server.get("/user", jsonParse, (req, res, next) => {
     res.json({user: user});
   } else {
     res.json({user: null});
+  }
+});
+
+server.get("/profile", jsonParse, (req, res, next) => {
+  let query = req.query;
+  let bearerToken = bearerTokenFromReq(req);
+  let username = auth.bearerAuth.username(bearerToken)
+  if (username && (username == query.username || true)){
+    let profile = db.getProfile(query.username);
+    res.json({profile: profile});
+  } else {
+    res.json({profile: null});
   }
 });
 

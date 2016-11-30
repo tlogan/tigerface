@@ -6,7 +6,6 @@ $(function() {
   var state = mkState();
 
   common.get('token', {}, function(result) {
-    console.log("you are not already logged in: " + JSON.stringify(result));
     state.update('token', result.token);
   });
 
@@ -27,7 +26,7 @@ $(function() {
       view.mkFrame(
         user.username,
         function() {
-          var $p = common.post('logout');
+          var $p = common.post('/logout');
           $p.then(function() {
             state.update('token', null);
           });

@@ -11,15 +11,15 @@ let insert = ((family, index, attrs) => {
   if (syntax.hasFamilySyntax(family) && syntax.hasIndexSyntax(index)) {
 
     if (_.has(bigTable, family)) {
-      bigTable = _.map(bigTable, (familyTable, familyKey) => {
+      bigTable = _.fromPairs(_.map(bigTable, (familyTable, familyKey) => {
         if (familyKey == family) {
-          return _.assign(familyTable, _.fromPairs([
+          return [familyKey, _.assign(familyTable, _.fromPairs([
             [index, attrs] 
-          ]));
+          ]))];
         } else {
-          return familyTable;
+          return [familyKey, familyTable];
         }
-      });
+      }));
     } else {
       bigTable = _.assign(bigTable, _.fromPairs([
         [family, _.fromPairs([[index, attrs]])]
@@ -33,7 +33,7 @@ let insert = ((family, index, attrs) => {
 
 });
 
-let get = ((family, index) => bigTable[family][index]);
+let get = ((family, index) => bigTable[family] ? bigTable[family][index] : null);
 
 let insertUser = (user => {
   return insert('user', user.username, user);
@@ -41,7 +41,10 @@ let insertUser = (user => {
 
 let getUser = (index => get('user', index));
 
+let getProfile = (index => get('user', index));
+
 let tigerfaceFile = path.resolve(__dirname + '/../tigerface.json');
+
 let save = (() => {
   try {
     fs.writeFileSync(tigerfaceFile, JSON.stringify(bigTable));
@@ -68,6 +71,8 @@ module.exports.get = get;
 
 module.exports.insertUser = insertUser;
 module.exports.getUser = getUser;
+
+module.exports.getProfile = getProfile;
 
 module.exports.save = save;
 module.exports.load = load;

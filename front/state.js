@@ -8,7 +8,9 @@ function mkState() {
   function addHandler(name, funcMap) {
     handlers = _.assign(handlers, _.fromPairs([[name, funcMap]]));
     _.forEach(funcMap, function(f, key) {
-      f(state[key]);
+      if (_.has(state, key)) {
+        f(state[key]);
+      }
     });
   }
 

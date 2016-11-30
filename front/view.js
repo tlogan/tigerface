@@ -79,10 +79,10 @@ var view = (function() {
         span({id: 'navlink_list'}).append(
           navlink({id: 'home_link', text: 'TigerFace', href: '/'})
         ),
-        span({id: 'user_navlink_list'}).append(
+        username ? span({id: 'user_navlink_list'}).append(
           navlink({id: 'profile_link', text: username, href: '/profile/' + username}),
           navlink({id: 'log_out_link', text: 'Log out'}).click(logout)
-        )
+        ) : null
       ),
       div({id: 'window'}).html($body)
     );

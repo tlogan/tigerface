@@ -10,7 +10,7 @@ var common = (function() {
       type: method,
       contentType: useJson ? 'application/json' : 'application/x-www-form-urlencoded; charset=UTF-8',
       url: url,
-      data: useJson ? JSON.stringify(data) : data,
+      data: method.toLowerCase() == 'post' ? JSON.stringify(data) : data,
       headers: headers,
       success: function(result) {
         success && success(result);
