@@ -238,6 +238,22 @@ server.put("/picture", rawParse, function(req, res, next) {
 
 });
 
+server.post("/note", jsonParse, (req, res, next) => {
+  let bearerToken = bearerTokenFromReq(req);
+  let username = auth.bearerAuth.username(bearerToken)
+  let user = db.getUser(username);
+  if (!user) {
+    return next("user must be logged in");
+  }
+
+  let body = req.body;
+  let profileId = body.profileId;
+  let textBody = body.textBody;
+  db.insertNote({profileId: profileId, textBody: textBody, author: username});
+  res.json({});
+
+});
+
 
 server.get("/save", jsonParse, (req, res, next) => {
   db.save();

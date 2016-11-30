@@ -10,6 +10,10 @@ var view = (function() {
     return $('<a>', attrs);
   };
 
+  var textarea = function(attrs) {
+    return $('<textarea>', attrs);
+  };
+
   var navlink = function(attrs) {
     return $('<a>', _.assign({class: 'navlink'}, attrs));
   };
@@ -108,6 +112,30 @@ var view = (function() {
     );
   }
 
+  function mkNoteEditor(update) {
+    return div({id: 'note_editor_panel', class: 'panel'}).append(
+      div().append(
+        textarea({id: 'note_editor_text'})
+      ), 
+      button({id: 'note_editor_button', text: 'Post'}).click(function() {
+        var textBody = $(this).prev().find('textarea#note_editor_text').val();
+        console.log("textBody: " + textBody);
+        update(textBody);
+      })
+    );
+  }
+
+
+  function mkNoteView(note) {
+    return div({id: 'note_view_panel', class: 'panel'}).append(
+      div().html(
+        navlink({id: 'note_view_author', text: note.author, href: '/profile/' + note.author})
+      ), 
+      div().html(
+        div({id: 'note_view_text', text: note.textBody})
+      ) 
+    );
+  }
 
   return {
     div: div,
@@ -117,6 +145,8 @@ var view = (function() {
     button: button,
     uploadButton: uploadButton,
     img: img,
+    mkNoteEditor: mkNoteEditor, 
+    mkNoteView: mkNoteView,
     mkLogInDiv: mkLogInDiv,
     mkSignUpDiv: mkSignUpDiv,
     mkFrame: mkFrame

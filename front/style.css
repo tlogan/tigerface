@@ -48,7 +48,7 @@ div#window {
 
 
 html {
-  overflow-y: hidden;
+  overflow-y: scroll;
 }
 
 body {
@@ -74,6 +74,11 @@ input[type=text], input[type=password] {
 }
 
 button, label.upload_button {
+}
+
+textarea {
+  width: 400px;
+  height: 120px;
 }
 
 button, label.upload_button {
@@ -139,6 +144,18 @@ button#sign_up_button {
 #profile_full_name {
   font-size: 20pt;
   font-weight: bold;
+}
+
+#note_view_panel {
+  width: 100%;
+}
+
+#note_view_author {
+  font-weight: bold;
+}
+
+#note_view_text {
+  padding-left: 10px;
 }
 
 

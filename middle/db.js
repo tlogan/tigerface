@@ -23,6 +23,10 @@ let insertUser = (user => {
   return insert('user', user);
 });
 
+let insertNote = (note => {
+  return insert('note', note);
+});
+
 
 let getUser = (username => { 
   return _.find(bigTable, r => r.family == 'user' && r.username == username);
@@ -35,10 +39,12 @@ let getFollow = (follower => {
 let getProfile = ((profileUsername, reqUsername) => {
   let profileUser = getUser(profileUsername);
   let follow = _.find(getFollow(reqUsername), follow => (follow.followee == profileUsername));  
+  let notes = _.filter(bigTable, r => ((r.family == 'note') && (r.profileId = profileUsername)));
 
   return {
     user: _.omit(profileUser, 'hashedPass'),
-    followStatus: follow && follow.status
+    followStatus: follow && follow.status,
+    notes: notes
   };
 
 });
@@ -118,6 +124,7 @@ module.exports.insertFollow = insertFollow;
 module.exports.removeFollow = removeFollow;
 module.exports.deleteUserPic = deleteUserPic;
 module.exports.updateUserPic = updateUserPic;
+module.exports.insertNote = insertNote;
 
 module.exports.save = save;
 module.exports.load = load;

@@ -10,7 +10,7 @@ $(function() {
 
   function render(user, profile) {
     var token = state.get('token');
-    $content.empty().append(
+    $content.html(
       view.mkFrame(
         user && user.username,
         function() {
@@ -53,7 +53,21 @@ $(function() {
                 });
               })
             }()) : null
-          )
+          ),
+          view.div().append(
+            view.mkNoteEditor(function(textBody) {
+              common.authPost(token)('/note', {profileId: profile.user.username, textBody: textBody}).then(function() {
+                common.authGet(token)('/profile', {username: profile.user.username}).then(function(result) {
+                  state.update('profile', result.profile);
+                });
+              });
+            })
+          ),
+          view.div().append((function() {
+            return _.map(profile.notes, function(note) {
+              return view.mkNoteView(note);
+            })
+          }()))
         ) : null 
       )
     );
