@@ -113,7 +113,7 @@ var view = (function() {
   }
 
   function mkNoteEditor(update) {
-    return div({id: 'note_editor_panel', class: 'panel'}).append(
+    return div({id: 'note_editor_panel'}).append(
       div().append(
         textarea({id: 'note_editor_text'})
       ), 
@@ -127,7 +127,7 @@ var view = (function() {
 
 
   function mkNoteView(note) {
-    return div({id: 'note_view_panel', class: 'panel'}).append(
+    return div({id: 'note_view_panel'}).append(
       div().html(
         navlink({id: 'note_view_author', text: note.author, href: '/profile/' + note.author})
       ), 

@@ -38,7 +38,7 @@ $(function() {
             }) : null
           ),
           view.div().append(
-            view.div({id: 'profile_full_name', class: 'panel', text: profile.user.fullName}),
+            view.div({id: 'profile_full_name', text: profile.user.fullName}),
 
             (profile.user.username != user.username) ? (function() {
               var followStatus = profile.followStatus; 

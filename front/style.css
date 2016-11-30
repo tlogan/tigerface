@@ -144,18 +144,25 @@ button#sign_up_button {
 #profile_full_name {
   font-size: 20pt;
   font-weight: bold;
+  margin-bottom: 20px;
+}
+
+#note_editor_panel {
+  padding-bottom: 16px;
 }
 
 #note_view_panel {
   width: 100%;
+  padding-bottom: 16px;
 }
 
 #note_view_author {
   font-weight: bold;
+  padding: 0px;
 }
 
 #note_view_text {
-  padding-left: 10px;
+  padding-left: 0px;
 }
 
 
