@@ -28,6 +28,22 @@ var common = (function() {
 
 
 
+  var sendFile = function(token) { return function(url, file) {
+    return $.ajax({
+      url: url,
+      type: 'put',
+      cache: false,
+      dataType: 'json',
+      processData: false,
+      contentType: false,
+      data: file,
+      headers: { 'Authorization': 'Bearer ' + (token ? token : "")},
+      error: function(jqXhr, textStatus, errorThrown){
+        console.log("Error: " + JSON.stringify(jqXhr.responseJSON));
+      }
+    });
+  }};
+
   var authGet = http('get', true); 
   var authPost = http('post', true); 
 
@@ -36,6 +52,7 @@ var common = (function() {
 
   return {
     http: http, 
+    sendFile: sendFile, 
     authGet: authGet,
     authPost: authPost,
     get: get,

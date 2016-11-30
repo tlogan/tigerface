@@ -66,6 +66,24 @@ let deleteUserPic = username => {
   fs.unlinkSync(file);
 };
 
+let updateUserPic = (username, data) => {
+  let picUrl = '/pics/' + username + '.jpg';
+  let file = path.resolve(__dirname + '/../front' + picUrl);
+  bigTable = _.map(bigTable, r => {
+    if (r.family == 'user' && r.username == username) {
+      return _.assign(r, {picture: picUrl});
+    } else {
+      return r;
+    }
+  });
+  try {
+    fs.writeFileSync(file, data);
+    console.log("new picture written");
+  } catch(err) {
+    console.log(err);
+  }
+};
+
 let tigerfaceFile = path.resolve(__dirname + '/../tigerface.json');
 
 let save = (() => {
@@ -99,6 +117,7 @@ module.exports.getProfile = getProfile;
 module.exports.insertFollow = insertFollow;
 module.exports.removeFollow = removeFollow;
 module.exports.deleteUserPic = deleteUserPic;
+module.exports.updateUserPic = updateUserPic;
 
 module.exports.save = save;
 module.exports.load = load;

@@ -26,10 +26,26 @@ var view = (function() {
     return $('<span>', attrs);
   };
 
+  var label = function(attrs) {
+    return $('<label>', attrs);
+  };
+
 
   var img = function(attrs) {
     return $('<img>', attrs);
   };
+ 
+  var uploadButton = function(attrs, onChange) {
+    var b = span(attrs);
+    var fileInput = view.input({type: 'file', class: 'file', required: true}).change(function() {
+      var file = fileInput && fileInput.val() ? fileInput[0].files[0] : null;
+      onChange(file);
+    });
+    return label({class: 'upload_button'}).append(
+      b, fileInput
+    ); 
+  };
+
   function mkLogInDiv(update) {
 
     return div({id: 'log_in_panel', class: 'panel'}).append(
@@ -95,8 +111,11 @@ var view = (function() {
 
   return {
     div: div,
+    span: span,
+    label: label,
     input: input,
     button: button,
+    uploadButton: uploadButton,
     img: img,
     mkLogInDiv: mkLogInDiv,
     mkSignUpDiv: mkSignUpDiv,

@@ -73,14 +73,15 @@ input[type=text], input[type=password] {
   background-color: white;
 }
 
-button {
+
+button, label.upload_button {
+  display: inline-block;
   border:1px;
   border-style:solid;
-  border-color: black;
-  background-color: #ccc;
+  border-color: #999;
+  background-color: #ddd;
   border-radius:2px;
   height: 30px;
-  max-width: 200px;
   padding-left:10px;
   padding-right:10px;
   margin-right:10px;
@@ -90,6 +91,11 @@ button {
   text-align: center;
   font-size: 12pt;
   cursor: pointer;
+}
+
+label.upload_button input[type=file] {
+  position: fixed;
+  top: -500px;
 }
 
 button#log_in_button {

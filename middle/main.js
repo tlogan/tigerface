@@ -221,6 +221,24 @@ server.post("/deletepic", jsonParse, (req, res, next) => {
 
 });
 
+
+
+server.put("/picture", rawParse, function(req, res, next) {
+
+  let bearerToken = bearerTokenFromReq(req);
+  let username = auth.bearerAuth.username(bearerToken)
+  let user = db.getUser(username);
+  if (!user) {
+    return next("user must be logged in");
+  }
+
+  let data = req.body;
+  db.updateUserPic(username, data);
+  res.json({});
+
+});
+
+
 server.get("/save", jsonParse, (req, res, next) => {
   db.save();
   res.redirect('/');
