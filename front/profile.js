@@ -18,7 +18,27 @@ $(function() {
             state.update('token', null);
           });
         },
-        profile ? view.div().text("Profile: " + JSON.stringify(profile)) : null
+        profile ? view.div().append(
+          view.div({class: 'panel', text: profile.user.fullName}),
+
+
+          (function() {
+            var followStatus = profile.followStatus; 
+            var buttonText = followStatus == 'pending' ? 'Cancel follow' : followStatus == 'active' ? 'Unfollow' : 'Follow';
+            var url = followStatus == 'pending' ? '/unfollow' : followStatus == 'active' ? '/unfollow' : '/follow'; 
+            return view.button({text: buttonText}).click(function() {
+              var token = state.get('token');
+              common.authPost(token)(url, {followee: profile.user.username}).then(function() {
+                common.authGet(token)('/profile', {username: profile.user.username}).then(function(result) {
+                  state.update('profile', result.profile);
+                });
+              });
+            })
+          }())
+
+
+
+        ) : null 
       )
     );
   }

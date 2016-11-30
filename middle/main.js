@@ -142,7 +142,7 @@ server.get("/user", jsonParse, (req, res, next) => {
   let username = auth.bearerAuth.username(bearerToken)
   if (username){
     let user = db.getUser(username);
-    res.json({user: user});
+    res.json({user: _.omit(user, 'hashedPass')});
   } else {
     res.json({user: null});
   }
@@ -153,11 +153,49 @@ server.get("/profile", jsonParse, (req, res, next) => {
   let bearerToken = bearerTokenFromReq(req);
   let username = auth.bearerAuth.username(bearerToken)
   if (username && (username == query.username || true)){
-    let profile = db.getProfile(query.username);
+    let profile = db.getProfile(query.username, username);
     res.json({profile: profile});
   } else {
     res.json({profile: null});
   }
+});
+
+server.post("/follow", jsonParse, (req, res, next) => {
+
+  let bearerToken = bearerTokenFromReq(req);
+  let username = auth.bearerAuth.username(bearerToken)
+  let follower = db.getUser(username);
+  if (!follower) {
+    return next("user must be logged in");
+  }
+  var body = req.body;
+  let followee = db.getUser(body.followee);
+  if (!followee) {
+    return next("followee does not exist");
+  }
+
+  db.insertFollow(follower.username, followee.username);
+  res.json({});
+
+});
+
+server.post("/unfollow", jsonParse, (req, res, next) => {
+
+  let bearerToken = bearerTokenFromReq(req);
+  let username = auth.bearerAuth.username(bearerToken)
+  let follower = db.getUser(username);
+  if (!follower) {
+    return next("user must be logged in");
+  }
+  var body = req.body;
+  let followee = db.getUser(body.followee);
+  if (!followee) {
+    return next("followee does not exist");
+  }
+
+  db.removeFollow(follower.username, followee.username);
+  res.json({});
+
 });
 
 server.get("/save", jsonParse, (req, res, next) => {

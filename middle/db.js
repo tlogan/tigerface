@@ -4,28 +4,13 @@ var fs = require('fs');
 var path = require('path');
 
 var syntax = require('./syntax');
-var bigTable = {};
+var bigTable = []; //simply a list of records, where each record has a family field (aka table);
 
-let insert = ((family, index, attrs) => {
+let insert = ((family, attrs) => {
+  if (syntax.hasFamilySyntax(family)) {
 
-  if (syntax.hasFamilySyntax(family) && syntax.hasIndexSyntax(index)) {
+    bigTable = _.concat(bigTable, [_.assign(attrs, {family: family})]);
 
-    if (_.has(bigTable, family)) {
-      bigTable = _.fromPairs(_.map(bigTable, (familyTable, familyKey) => {
-        if (familyKey == family) {
-          return [familyKey, _.assign(familyTable, _.fromPairs([
-            [index, attrs] 
-          ]))];
-        } else {
-          return [familyKey, familyTable];
-        }
-      }));
-    } else {
-      bigTable = _.assign(bigTable, _.fromPairs([
-        [family, _.fromPairs([[index, attrs]])]
-      ]));
-    }
-  
     return true;
   } else {
     return false;
@@ -33,15 +18,40 @@ let insert = ((family, index, attrs) => {
 
 });
 
-let get = ((family, index) => bigTable[family] ? bigTable[family][index] : null);
 
 let insertUser = (user => {
-  return insert('user', user.username, user);
+  return insert('user', user);
 });
 
-let getUser = (index => get('user', index));
 
-let getProfile = (index => get('user', index));
+let getUser = (username => { 
+  return _.find(bigTable, r => r.family == 'user' && r.username == username);
+});
+
+let getFollow = (follower => { 
+  return _.filter(bigTable, r => r.family == 'follow' && r.follower == follower);
+});
+
+let getProfile = ((profileUsername, reqUsername) => {
+  let profileUser = getUser(profileUsername);
+  let follow = _.find(getFollow(reqUsername), follow => (follow.followee == profileUsername));  
+
+  return {
+    user: _.omit(profileUser, 'hashedPass'),
+    followStatus: follow && follow.status
+  };
+
+});
+
+let insertFollow = (follower, followee) => {
+  return insert('follow', {follower: follower, followee: followee, status: 'pending'});
+};
+
+
+let removeFollow = (follower, followee) => {
+  bigTable = _.filter(bigTable, r => (!(r.family == 'follow' && r.follower == follower && r.followee == followee)));
+  return true;
+};
 
 let tigerfaceFile = path.resolve(__dirname + '/../tigerface.json');
 
@@ -53,6 +63,10 @@ let save = (() => {
     console.log(err);
   }
 });
+
+
+
+
 
 
 let load = (() => {
@@ -67,12 +81,14 @@ let load = (() => {
 
 
 module.exports.insert = insert;
-module.exports.get = get;
 
 module.exports.insertUser = insertUser;
 module.exports.getUser = getUser;
 
 module.exports.getProfile = getProfile;
+
+module.exports.insertFollow = insertFollow;
+module.exports.removeFollow = removeFollow;
 
 module.exports.save = save;
 module.exports.load = load;
