@@ -73,24 +73,27 @@ input[type=text], input[type=password] {
   background-color: white;
 }
 
+button, label.upload_button {
+}
 
 button, label.upload_button {
   display: inline-block;
+  vertical-align: top;
   border:1px;
   border-style:solid;
   border-color: #999;
   background-color: #ddd;
   border-radius:2px;
-  height: 30px;
-  padding-left:10px;
-  padding-right:10px;
+  padding: 4px 9px;
   margin-right:10px;
   margin-top: 3px; 
   margin-bottom: 3px; 
   font-family: "Courier New", Courier, monospace;
-  text-align: center;
   font-size: 12pt;
   cursor: pointer;
+}
+
+label.upload_button span {
 }
 
 label.upload_button input[type=file] {

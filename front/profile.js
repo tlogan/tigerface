@@ -22,16 +22,13 @@ $(function() {
         profile ? view.div().append(
           view.div().append(
             profile.user.picture ? view.img({src: profile.user.picture + '?' + (new Date()).getTime()}) : null,
-            (profile.user.username == user.username) ? view.span().append(
-              view.uploadButton({id: 'edit_pic_button', text: 'Edit picture'}, function(file) {
-                common.sendFile(token)('/picture', file).then(function() {
-                  common.authGet(token)('/profile', {username: profile.user.username}).then(function(result) {
-                    console.log("updating profile");
-                    state.update('profile', result.profile);
-                  });
+            (profile.user.username == user.username) ? view.uploadButton({id: 'edit_pic_button', text: 'Edit picture'}, function(file) {
+              common.sendFile(token)('/picture', file).then(function() {
+                common.authGet(token)('/profile', {username: profile.user.username}).then(function(result) {
+                  state.update('profile', result.profile);
                 });
-              })
-            )  : null,
+              });
+            }) : null,
             (profile.user.username == user.username && profile.user.picture) ? view.button({id: 'delete_pic_button', text: 'Delete picture'}).click(function() {
                 common.authPost(token)('/deletepic', {}).then(function() {
                   common.authGet(token)('/profile', {username: profile.user.username}).then(function(result) {
@@ -91,7 +88,6 @@ $(function() {
 
     profile: function(profile) {
       if (state.has('user')) { //ready to render when both user and profile have been retrieved
-        console.log("rendering profile");
         render(state.get('user'), profile);
       }
     }
