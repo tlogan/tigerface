@@ -53,6 +53,19 @@ let removeFollow = (follower, followee) => {
   return true;
 };
 
+
+let deleteUserPic = username => {
+  let file = path.resolve(__dirname + '/../front/pics/' + username + '.jpg');
+  bigTable = _.map(bigTable, r => {
+    if (r.family == 'user' && r.username == username) {
+      return _.omit(r, 'picture');
+    } else {
+      return r;
+    }
+  });
+  fs.unlinkSync(file);
+};
+
 let tigerfaceFile = path.resolve(__dirname + '/../tigerface.json');
 
 let save = (() => {
@@ -63,10 +76,6 @@ let save = (() => {
     console.log(err);
   }
 });
-
-
-
-
 
 
 let load = (() => {
@@ -89,6 +98,7 @@ module.exports.getProfile = getProfile;
 
 module.exports.insertFollow = insertFollow;
 module.exports.removeFollow = removeFollow;
+module.exports.deleteUserPic = deleteUserPic;
 
 module.exports.save = save;
 module.exports.load = load;

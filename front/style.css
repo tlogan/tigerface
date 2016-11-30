@@ -1,6 +1,12 @@
 div {
 }
 
+img {
+  display: block;
+  height: 300px;
+  text-align: center;
+}
+
 a.navlink {
   display: inline-block;
   text-decoration: none;
@@ -14,6 +20,7 @@ a.navlink {
 
 a.navlink#home_link {
   font-weight: bold;
+  font-size: 14pt;
   color: #f36e21;
 }
 
@@ -73,27 +80,30 @@ button {
   background-color: #ccc;
   border-radius:2px;
   height: 30px;
-  width: 200px;
+  max-width: 200px;
   padding-left:10px;
+  padding-right:10px;
+  margin-right:10px;
   margin-top: 3px; 
   margin-bottom: 3px; 
   font-family: "Courier New", Courier, monospace;
   text-align: center;
   font-size: 12pt;
   cursor: pointer;
-  font-weight: bold;
 }
 
 button#log_in_button {
   border-color: #dd6005;
   background-color: #ffc107;
   color: black;
+  font-weight: bold;
 }
 
 button#sign_up_button {
   border-color: #0560dd;
   background-color: #07c1ff;
   color: white;
+  font-weight: bold;
 }
 
 .heading {
@@ -115,6 +125,11 @@ button#sign_up_button {
 
 #start_section .panel {
   margin-bottom: 20px;
+}
+
+#profile_full_name {
+  font-size: 20pt;
+  font-weight: bold;
 }
 
 

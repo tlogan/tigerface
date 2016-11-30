@@ -9,6 +9,7 @@ $(function() {
   });
 
   function render(user, profile) {
+    var token = state.get('token');
     $content.empty().append(
       view.mkFrame(
         user && user.username,
@@ -19,25 +20,34 @@ $(function() {
           });
         },
         profile ? view.div().append(
-          view.div({class: 'panel', text: profile.user.fullName}),
-
-
-          (function() {
-            var followStatus = profile.followStatus; 
-            var buttonText = followStatus == 'pending' ? 'Cancel follow' : followStatus == 'active' ? 'Unfollow' : 'Follow';
-            var url = followStatus == 'pending' ? '/unfollow' : followStatus == 'active' ? '/unfollow' : '/follow'; 
-            return view.button({text: buttonText}).click(function() {
-              var token = state.get('token');
-              common.authPost(token)(url, {followee: profile.user.username}).then(function() {
-                common.authGet(token)('/profile', {username: profile.user.username}).then(function(result) {
-                  state.update('profile', result.profile);
+          view.div().append(
+            profile.user.picture ? view.img({src: profile.user.picture}) : null,
+            (profile.user.username == user.username) ? view.button({id: 'edit_pic_button', text: 'Edit picture'})  : null,
+            (profile.user.username == user.username && profile.user.picture) ? view.button({id: 'delete_pic_button', text: 'Delete picture'}).click(function() {
+                common.authPost(token)('/deletepic', {}).then(function() {
+                  common.authGet(token)('/profile', {username: profile.user.username}).then(function(result) {
+                    state.update('profile', result.profile);
+                  });
                 });
-              });
-            })
-          }())
+            }) : null
+          ),
+          view.div().append(
+            view.div({id: 'profile_full_name', class: 'panel', text: profile.user.fullName}),
 
-
-
+            (profile.user.username != user.username) ? (function() {
+              var followStatus = profile.followStatus; 
+              var buttonText = followStatus == 'pending' ? 'Cancel follow' : followStatus == 'active' ? 'Unfollow' : 'Follow';
+              var url = followStatus == 'pending' ? '/unfollow' : followStatus == 'active' ? '/unfollow' : '/follow'; 
+              return view.button({text: buttonText}).click(function() {
+                var token = state.get('token');
+                common.authPost(token)(url, {followee: profile.user.username}).then(function() {
+                  common.authGet(token)('/profile', {username: profile.user.username}).then(function(result) {
+                    state.update('profile', result.profile);
+                  });
+                });
+              })
+            }()) : null
+          )
         ) : null 
       )
     );

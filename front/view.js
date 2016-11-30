@@ -26,6 +26,10 @@ var view = (function() {
     return $('<span>', attrs);
   };
 
+
+  var img = function(attrs) {
+    return $('<img>', attrs);
+  };
   function mkLogInDiv(update) {
 
     return div({id: 'log_in_panel', class: 'panel'}).append(
@@ -93,6 +97,7 @@ var view = (function() {
     div: div,
     input: input,
     button: button,
+    img: img,
     mkLogInDiv: mkLogInDiv,
     mkSignUpDiv: mkSignUpDiv,
     mkFrame: mkFrame

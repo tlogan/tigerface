@@ -165,6 +165,7 @@ server.post("/follow", jsonParse, (req, res, next) => {
   let bearerToken = bearerTokenFromReq(req);
   let username = auth.bearerAuth.username(bearerToken)
   let follower = db.getUser(username);
+
   if (!follower) {
     return next("user must be logged in");
   }
@@ -172,6 +173,10 @@ server.post("/follow", jsonParse, (req, res, next) => {
   let followee = db.getUser(body.followee);
   if (!followee) {
     return next("followee does not exist");
+  }
+
+  if (follower.username == followee.username) {
+    return next("logged in user must be different from followee");
   }
 
   db.insertFollow(follower.username, followee.username);
@@ -193,7 +198,25 @@ server.post("/unfollow", jsonParse, (req, res, next) => {
     return next("followee does not exist");
   }
 
+  if (follower.username == followee.username) {
+    return next("logged in user must be different from followee");
+  }
+
   db.removeFollow(follower.username, followee.username);
+  res.json({});
+
+});
+
+server.post("/deletepic", jsonParse, (req, res, next) => {
+
+  let bearerToken = bearerTokenFromReq(req);
+  let username = auth.bearerAuth.username(bearerToken)
+  let user = db.getUser(username);
+  if (!user) {
+    return next("user must be logged in");
+  }
+
+  db.deleteUserPic(username);
   res.json({});
 
 });

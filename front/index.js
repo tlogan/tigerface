@@ -15,7 +15,6 @@ $(function() {
         state.update('token', result.token);
       })),
       view.div().html(view.mkSignUpDiv(function(result) {
-        console.log("just created new user: " + JSON.stringify(result));
         state.update('token', result.token);
       }))
     ));
