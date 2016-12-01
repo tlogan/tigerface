@@ -142,7 +142,19 @@ server.get("/user", jsonParse, (req, res, next) => {
   let username = auth.bearerAuth.username(bearerToken)
   if (username){
     let user = db.getUser(username);
-    res.json({user: _.omit(user, 'hashedPass')});
+
+    let followees = _.map(_.filter(db.getFollow(username), r => r.status == 'active'), r => r.followee);
+    let pendingFollowees = _.map(_.filter(db.getFollow(username), r => r.status == 'pending'), r => r.followee);
+
+    let followers = _.map(_.filter(db.getFollowByFollowee(username), r => r.status == 'active'), r => r.follower);
+    let pendingFollowers = _.map(_.filter(db.getFollowByFollowee(username), r => r.status == 'pending'), r => r.follower);
+
+    res.json({user: _.assign(_.omit(user, 'hashedPass'), {
+      followees: followees,
+      pendingFollowees: pendingFollowees,
+      followers: followers,
+      pendingFollowers: pendingFollowers
+    })});
   } else {
     res.json({user: null});
   }
@@ -206,6 +218,54 @@ server.post("/unfollow", jsonParse, (req, res, next) => {
   res.json({});
 
 });
+
+
+server.post("/acceptFollower", jsonParse, (req, res, next) => {
+
+  let bearerToken = bearerTokenFromReq(req);
+  let username = auth.bearerAuth.username(bearerToken)
+  let followee = db.getUser(username);
+  if (!followee) {
+    return next("user must be logged in");
+  }
+  var body = req.body;
+  let follower = db.getUser(body.follower);
+  if (!follower) {
+    return next("follower does not exist");
+  }
+
+  if (follower.username == followee.username) {
+    return next("logged in user must be different from followee");
+  }
+
+  db.activateFollow(follower.username, followee.username);
+  res.json({});
+
+});
+
+server.post("/removeFollower", jsonParse, (req, res, next) => {
+
+  let bearerToken = bearerTokenFromReq(req);
+  let username = auth.bearerAuth.username(bearerToken)
+  let followee = db.getUser(username);
+  if (!followee) {
+    return next("user must be logged in");
+  }
+  var body = req.body;
+  let follower = db.getUser(body.follower);
+  if (!follower) {
+    return next("follower does not exist");
+  }
+
+  if (follower.username == followee.username) {
+    return next("logged in user must be different from followee");
+  }
+
+  db.removeFollow(follower.username, followee.username);
+  res.json({});
+
+});
+
 
 server.post("/deletepic", jsonParse, (req, res, next) => {
 

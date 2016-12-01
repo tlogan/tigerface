@@ -36,6 +36,10 @@ let getFollow = (follower => {
   return _.filter(bigTable, r => r.family == 'follow' && r.follower == follower);
 });
 
+let getFollowByFollowee = (followee => { 
+  return _.filter(bigTable, r => r.family == 'follow' && r.followee == followee);
+});
+
 let getProfile = ((profileUsername, reqUsername) => {
   let profileUser = getUser(profileUsername);
   let follow = _.find(getFollow(reqUsername), follow => (follow.followee == profileUsername));  
@@ -56,6 +60,17 @@ let insertFollow = (follower, followee) => {
 
 let removeFollow = (follower, followee) => {
   bigTable = _.filter(bigTable, r => (!(r.family == 'follow' && r.follower == follower && r.followee == followee)));
+  return true;
+};
+
+let activateFollow = (follower, followee) => {
+  bigTable = _.map(bigTable, r => {
+    if ((r.family == 'follow' && r.follower == follower && r.followee == followee)) {
+      return _.assign(r, {status: 'active'});
+    } else {
+      return r;
+    }
+  });
   return true;
 };
 
@@ -122,9 +137,12 @@ module.exports.getProfile = getProfile;
 
 module.exports.insertFollow = insertFollow;
 module.exports.removeFollow = removeFollow;
+module.exports.activateFollow = activateFollow;
 module.exports.deleteUserPic = deleteUserPic;
 module.exports.updateUserPic = updateUserPic;
 module.exports.insertNote = insertNote;
+module.exports.getFollow = getFollow;
+module.exports.getFollowByFollowee = getFollowByFollowee;
 
 module.exports.save = save;
 module.exports.load = load;

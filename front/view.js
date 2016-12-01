@@ -15,7 +15,7 @@ var view = (function() {
   };
 
   var navlink = function(attrs) {
-    return $('<a>', _.assign({class: 'navlink'}, attrs));
+    return $('<a>', _.assign(attrs, {class: 'navlink ' + attrs.class}));
   };
 
   var input = function(attrs) {
@@ -142,6 +142,7 @@ var view = (function() {
     span: span,
     label: label,
     input: input,
+    navlink: navlink,
     button: button,
     uploadButton: uploadButton,
     img: img,
