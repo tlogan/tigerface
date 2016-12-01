@@ -39,7 +39,7 @@ let getFollow = (follower => {
 let getProfile = ((profileUsername, reqUsername) => {
   let profileUser = getUser(profileUsername);
   let follow = _.find(getFollow(reqUsername), follow => (follow.followee == profileUsername));  
-  let notes = _.filter(bigTable, r => ((r.family == 'note') && (r.profileId = profileUsername)));
+  let notes = _.reverse(_.filter(bigTable, r => ((r.family == 'note') && (r.profileId == profileUsername))));
 
   return {
     user: _.omit(profileUser, 'hashedPass'),
