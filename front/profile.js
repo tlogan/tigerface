@@ -14,9 +14,8 @@ $(function() {
       view.mkFrame(
         user && user.username,
         function() {
-          var $p = common.post('/logout');
-          $p.then(function() {
-            state.update('token', null);
+          common.post('/logout').then(function() {
+            window.location = "/";
           });
         },
         profile ? view.div().append(
@@ -55,13 +54,13 @@ $(function() {
             }()) : null
           ),
           view.div().append(
-            view.mkNoteEditor(function(textBody) {
+            (user.username == profile.user.username || profile.followStatus == 'active') ? view.mkNoteEditor(function(textBody) {
               common.authPost(token)('/note', {profileId: profile.user.username, textBody: textBody}).then(function() {
                 common.authGet(token)('/profile', {username: profile.user.username}).then(function(result) {
                   state.update('profile', result.profile);
                 });
               });
-            })
+            }) : null
           ),
           view.div().append((function() {
             return _.map(profile.notes, function(note) {

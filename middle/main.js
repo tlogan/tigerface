@@ -309,6 +309,12 @@ server.post("/note", jsonParse, (req, res, next) => {
   let body = req.body;
   let profileId = body.profileId;
   let textBody = body.textBody;
+
+  let follow = _.find(db.getFollow(username), r => r.followee == profileId);
+  if ((username != profileId) && (!follow || follow.status != 'active')) {
+    return next("user must be the profile's user or be a follower of profile's user");
+  } 
+
   db.insertNote({profileId: profileId, textBody: textBody, author: username});
   res.json({});
 
