@@ -16,6 +16,7 @@ let mk = db => {
 
   let getUser = (username => { 
 
+    console.log("getting user from db: " + db);
     let kvObject = db.get(
       (r, env) => r.family == 'user' && r.username == env.username ? [ {k: env.username, v: r} ] : [],
       (k, vs) => [{k: k, v: vs}],

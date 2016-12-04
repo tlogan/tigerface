@@ -3,7 +3,10 @@ var _ = require('lodash');
 var fs = require('fs');
 var path = require('path');
 
+
 let mk = name => {
+
+  let tigerfaceFile = path.resolve(__dirname + '/../tigerface_' + name + '.json');
 
   var bigTable = []; //simply a list of records, where each record has a family field (aka table);
 
@@ -34,8 +37,6 @@ let mk = name => {
     bigTable = _.filter(bigTable, r => !filter(r, env));
     return true;
   };
-
-  let tigerfaceFile = path.resolve(__dirname + '/../tigerface_' + name + '.json');
 
   let save = () => {
     let fd = null;

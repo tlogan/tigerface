@@ -2,34 +2,15 @@
 var _ = require('lodash');
 var fs = require('fs');
 var path = require('path');
-var request = require('request');
+var request = require('sync-request');
 
 let mk = ipAddress => {
 
   let http = (url, reqBody) => {
-    let result = null;
-    q.spawn(function* () {
-      var df = q.defer();
-      request({
-        method: 'post',
-        uri: ipAddress + "/" + url,
-        body: reqBody,
-        json: true 
-      }, (error, response, resBody) => {
-        if (!error) {
-          if (response.statusCode == 200) {
-            df.resolve(resBody);
-          } else {
-            df.reject(resBody);
-          }
-        } else {
-          df.reject(resBody.errors);
-        }
-      }); 
-      result = yield df.promise;
-      console.log("http result: " + JSON.stringify(result));
-    });
-    return result;
+    let uri = "http://" + ipAddress + "/" + url;
+    console.log("uri: " + uri);
+    let response = request('POST', uri, {json: reqBody});
+    return JSON.parse(response.getBody('utf8'));
   };
 
   let insert = (family, attrs) => {

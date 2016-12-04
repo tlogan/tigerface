@@ -1,8 +1,6 @@
 'use strict';
 var express = require('express');
 var server = express();
-var path = require('path');
-var server = express();
 var bodyParser = require('body-parser');
 var _ = require('lodash');
 var q = require('q');
@@ -10,8 +8,8 @@ var path = require('path');
 
 var jsonParse = bodyParser.json();
 
-let partitition = require('./partition');
-let port = process.argv[0] || 5555; 
+let partition = require('./partition');
+let port = _.drop(process.argv, 2)[0] || 5555; 
 let part = partition.mk(port);
 
 
@@ -45,12 +43,12 @@ server.post("/remove", jsonParse, (req, res, next) => {
   res.json(part.remove(evalF(b.filter), b.env));
 });
 
-server.get("/save", jsonParse, (req, res, next) => {
+server.post("/save", jsonParse, (req, res, next) => {
   part.save();
   res.json({});
 });
 
-server.get("/load", jsonParse, (req, res, next) => {
+server.post("/load", jsonParse, (req, res, next) => {
   part.load();
   res.json({});
 });
@@ -75,17 +73,17 @@ server.use((err, req, res, next) => {
 });
 
 
-db.load();
+part.load();
 
 process.on ('SIGINT', () => {
   process.exit (0);
 });
 
 process.on('exit', (code) => {
-  db.save();
+  part.save();
 });
 
 //serve data to authorized users
-server.listen(port, () => {
+server.listen(parseInt(port), () => {
     console.log('Partition listening on port ' + port + '!\n');
 });

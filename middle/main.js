@@ -11,13 +11,13 @@ var path = require('path');
 var auth = require('./auth');
 
 var syntax = require('./syntax');
-var model = require('./model').mk(db);
 
 var jsonParse = bodyParser.json();
 var rawParse = bodyParser.raw({type: "*/*", limit: '4000kb'});
 
-let ipAddrlist = process.argv; 
+let ipAddrList = _.drop(process.argv, 2); 
 var db = require('./db').mk(ipAddrList);
+var model = require('./model').mk(db);
 
 server.use(cookieParser());
 
