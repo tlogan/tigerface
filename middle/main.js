@@ -12,7 +12,7 @@ var path = require('path');
 var auth = require('./auth');
 
 var syntax = require('./syntax');
-var db = require('./db');
+var db = require('./model').mk(require('./db'));
 
 var jsonParse = bodyParser.json();
 var rawParse = bodyParser.raw({type: "*/*", limit: '4000kb'});

@@ -6,107 +6,57 @@ var path = require('path');
 var syntax = require('./syntax');
 var bigTable = []; //simply a list of records, where each record has a family field (aka table);
 
-let insert = ((family, attrs) => {
+let insert = (family, attrs) => {
   if (syntax.hasFamilySyntax(family)) {
-
     bigTable = _.concat(bigTable, [_.assign(attrs, {family: family})]);
-
     return true;
   } else {
     return false;
   } 
-
-});
-
-
-let insertUser = (user => {
-  return insert('user', user);
-});
-
-let insertNote = (note => {
-  return insert('note', note);
-});
-
-
-let getUser = (username => { 
-  return _.find(bigTable, r => r.family == 'user' && r.username == username);
-});
-
-let getFollow = (follower => { 
-  return _.filter(bigTable, r => r.family == 'follow' && r.follower == follower);
-});
-
-let getFollowByFollowee = (followee => { 
-  return _.filter(bigTable, r => r.family == 'follow' && r.followee == followee);
-});
-
-let getProfile = ((profileUsername, reqUsername) => {
-  let profileUser = getUser(profileUsername);
-  let follow = _.find(getFollow(reqUsername), follow => (follow.followee == profileUsername));  
-  let notes = _.reverse(_.filter(bigTable, r => {
-    return (r.family == 'note') && (r.profileId == profileUsername)
-    && (r.author == reqUsername || _.find(bigTable, r2 => (r2.family == 'follow' && r2.follower == reqUsername && (r2.followee == r.author)))); 
-  }));
-
-  return {
-    user: _.omit(profileUser, 'hashedPass'),
-    followStatus: follow && follow.status,
-    notes: notes
-  };
-
-});
-
-let insertFollow = (follower, followee) => {
-  return insert('follow', {follower: follower, followee: followee, status: 'pending'});
 };
 
-
-let removeFollow = (follower, followee) => {
-  bigTable = _.filter(bigTable, r => (!(r.family == 'follow' && r.follower == follower && r.followee == followee)));
-  return true;
-};
-
-let activateFollow = (follower, followee) => {
+let update = (set, filter) => {
   bigTable = _.map(bigTable, r => {
-    if ((r.family == 'follow' && r.follower == follower && r.followee == followee)) {
-      return _.assign(r, {status: 'active'});
+    if (filter(r)) {
+      return set(r);
     } else {
       return r;
     }
   });
-  return true;
 };
 
+//map: object -> list of object 
+//reduce: (k, v, v) -> v 
+///
+//get: (->, ->) -> list of object
+let get = (map, reduce) => {
+  let pairs = _.flatMap(bigTable, r => map(r)); 
 
-let deleteUserPic = username => {
-  let file = path.resolve(__dirname + '/../front/pics/' + username + '.jpg');
-  bigTable = _.map(bigTable, r => {
-    if (r.family == 'user' && r.username == username) {
-      return _.omit(r, 'picture');
+  let loop = ps => {
+    let groups = _.groupBy(ps, p => p.k);
+    let newPairs = _.map(groups, (ps, k) => {
+      let vs = _.map(ps, p => p.v);
+      return reduce(k, vs);
+    }); 
+    //if there are no more duplicate keys then stop; otherwise reduce again 
+    if (_.size(_.uniq(_.map(newPairs, p => p.k))) <= _.size(newPairs)) {
+      return newPairs;
     } else {
-      return r;
+      loop(newPairs);
     }
-  });
-  fs.unlinkSync(file);
-};
-
-let updateUserPic = (username, data) => {
-  let picUrl = '/pics/' + username + '.jpg';
-  let file = path.resolve(__dirname + '/../front' + picUrl);
-  bigTable = _.map(bigTable, r => {
-    if (r.family == 'user' && r.username == username) {
-      return _.assign(r, {picture: picUrl});
-    } else {
-      return r;
-    }
-  });
-  try {
-    fs.writeFileSync(file, data);
-    console.log("new picture written");
-  } catch(err) {
-    console.log(err);
   }
+
+  let newPairs = loop(pairs);
+  return _.fromPairs(_.map(newPairs, p => [p.k, p.v]));
+
 };
+
+
+let remove = filter => {
+  bigTable = _.filter(bigTable, r => !filter(r));
+  return true;
+};
+
 
 let tigerfaceFile = path.resolve(__dirname + '/../tigerface.json');
 
@@ -132,20 +82,14 @@ let load = (() => {
 
 
 module.exports.insert = insert;
-
-module.exports.insertUser = insertUser;
-module.exports.getUser = getUser;
-
-module.exports.getProfile = getProfile;
-
-module.exports.insertFollow = insertFollow;
-module.exports.removeFollow = removeFollow;
-module.exports.activateFollow = activateFollow;
-module.exports.deleteUserPic = deleteUserPic;
-module.exports.updateUserPic = updateUserPic;
-module.exports.insertNote = insertNote;
-module.exports.getFollow = getFollow;
-module.exports.getFollowByFollowee = getFollowByFollowee;
+module.exports.update = update;
+module.exports.get = get;
+module.exports.remove = remove;
 
 module.exports.save = save;
 module.exports.load = load;
+
+
+
+
+
