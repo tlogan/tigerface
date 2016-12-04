@@ -34,7 +34,7 @@ let get = (map, reduce) => {
 
   let loop = ps => {
     let groups = _.groupBy(ps, p => p.k);
-    let newPairs = _.map(groups, (ps, k) => {
+    let newPairs = _.flatMap(groups, (ps, k) => {
       let vs = _.map(ps, p => p.v);
       return reduce(k, vs);
     }); 
@@ -47,7 +47,8 @@ let get = (map, reduce) => {
   }
 
   let newPairs = loop(pairs);
-  return _.fromPairs(_.map(newPairs, p => [p.k, p.v]));
+  let o =  _.fromPairs(_.map(newPairs, p => ([p.k, p.v])));
+  return o;
 
 };
 

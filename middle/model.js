@@ -1,4 +1,7 @@
 'use strict';
+var _ = require('lodash');
+var fs = require('fs');
+var path = require('path');
 
 let mk = db => {
 
@@ -14,12 +17,12 @@ let mk = db => {
   let getUser = (username => { 
 
     let kvObject = db.get(
-      r => r.family == 'user' && r.username == username ? [ [{k: username, v: r}] ] : [],
-      (k, acc, v) => _.concat(acc, v),
+      r => r.family == 'user' && r.username == username ? [ {k: username, v: r} ] : [],
+      (k, vs) => [{k: k, v: vs}]
     );
     let userList = kvObject[username];
 
-    return _.size(userList) > 0 && userList[0] && userList[0].v;
+    return _.size(userList) > 0 && userList[0];
   });
 
   let getFollow = (follower => { 
@@ -30,7 +33,7 @@ let mk = db => {
     );
     let followList = kvObject[follower];
 
-    return _.size(followList) > 0 && _.map(followList, p => p.v);
+    return _.size(followList) > 0 && followList;
   });
 
   let getFollowByFollowee = followee => { 
@@ -40,75 +43,56 @@ let mk = db => {
     );
     let followList = kvObject[followee];
 
-    return _.size(followList) > 0 && _.map(followList, p => p.v);
+    return _.size(followList) > 0 && followList;
   };
 
 
-
-  //join together users, follows, and notes using db mapReduce api
+  //join together follows, and notes using db mapReduce api
   //
   //should be equivalent to pseuodo sql:
   //select * 
-  //from user, follow, note
-  //where user.username = profileUsername
   //and note.profileId = profileUsername
   //and (
   //   (note.author == requUsername) 
   //   or  (follow.follwer == reqUsername and follow.followee == note.author)
   //)
-  let getProfile = (profileUsername, reqUsername) => {
+  let getNotes = (profileUsername, reqUsername) => {
     let map = r => {
-      if (r.family == 'user' && r.username == profileUsername) {
-        return [ {k: 'p-' + profileUsername, v: r} ];
-      } else if (r.family == 'note' && r.profileId == profileUsername) {
-        return [ {k: 'p-' + profileUsername, v: r} ];
+      if (r.family == 'note' && r.profileId == profileUsername) {
+        return [ {k: r.author, v: r} ];
       } else if (r.family == 'follow' && r.follower == reqUsername) {
-        return [ {k: 'r-' + reqUsername, v: r} ];
+        return [ {k: r.followee, v: r} ];
       } else {
         return [];
       }
     };
 
     let reduce = (k, vs) => {
-      if (_.startsWith(k, 'p-')) {
-        let users = _.map(vs, v => v.family == 'user');
-        let notes = _.map(vs, v => v.family == 'notes');
+        let notes = _.filter(vs, v => v.family == 'note');
+        let follows = _.filter(vs, v => v.family == 'follow');
 
-        let userNotes = (
-          _.flatMap(users, u => _.map(notes, n => 
-            {family: 'user-note', user: u, note: n};
-          ))
-        );
+        let filtNotes = _.filter(notes, n => (
+          n.author == reqUsername || _.find(follows, f => n.author == f.followee)
+        ));
 
-        return _.map(userNotes, un => {k: 'r-' + un.note.author, v: un});
+        return _.map(filtNotes, un => ({k: k, v: filtNotes}));
 
-      } else (_.startsWith(k, 'r-')){
-
-        let userNotes = _.map(vs, v => v.family == 'user-note');
-        let follows = _.map(vs, v => v.family == 'follow');
-        let filtUserNotes = _.filter(userNotes, un => (
-          un.note.author == reqUsername || _.find(follows, f => f.follower == reqUsername && f.followee == un.note.author)
-        ));  
-
-        return _.map(filterUserNotes, un => {k: u.username, v: un});
-
-      } else {
-        let users = _.map(vs, v => v.user);
-        let notes = _.map(vs, v => v.note);
-        return [{k: k, v: {user: users[0], notes: notes}}];
-      }
     };
 
     let kvObject = db.get(map, reduce);
-    let userWithNotes = kvObject[profileUsername];
+    return _.flatten(_.values(kvObject));
+  };
 
+  let getProfile = (profileUsername, reqUsername) => {
 
+    let user = getUser(profileUsername);
+    let notes = _.reverse(getNotes(profileUsername, reqUsername));
     let follow = _.find(getFollow(reqUsername), follow => (follow.followee == profileUsername));  
 
     return {
-      user: _.omit(userWithNotes.user, 'hashedPass'),
+      user: user,
       followStatus: follow && follow.status,
-      notes: userWithNotes.notes
+      notes: notes
     };
   };
 
@@ -132,14 +116,14 @@ let mk = db => {
 
 
   let deleteUserPic = username => {
-    db.update(r => _.omit(r, 'picture'), r.family == 'user' && r.username == username);
+    db.update(r => _.omit(r, 'picture'), r => r.family == 'user' && r.username == username);
     let file = path.resolve(__dirname + '/../front/pics/' + username + '.jpg');
     fs.unlinkSync(file);
   };
 
   let updateUserPic = (username, data) => {
     let picUrl = '/pics/' + username + '.jpg';
-    db.update(r => _.assign(r, {picture: picUrl}), r.family == 'user' && r.username == username);
+    db.update(r => _.assign(r, {picture: picUrl}), r => r.family == 'user' && r.username == username);
 
     let file = path.resolve(__dirname + '/../front' + picUrl);
     try {

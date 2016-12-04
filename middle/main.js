@@ -12,7 +12,8 @@ var path = require('path');
 var auth = require('./auth');
 
 var syntax = require('./syntax');
-var db = require('./model').mk(require('./db'));
+var db = require('./db');
+var model = require('./model').mk(db);
 
 var jsonParse = bodyParser.json();
 var rawParse = bodyParser.raw({type: "*/*", limit: '4000kb'});
@@ -73,13 +74,13 @@ server.post("/signup", jsonParse, (req, res, next) => {
     return next("password must contain one or more lowercase letters or numbers only.");
   }
 
-  if (db.getUser(body.username)) {
+  if (model.getUser(body.username)) {
     return next("username already exists");
   }
 
   let hashedPass = auth.hashPassword(body.password);
-  db.insertUser({username: body.username, fullName: body.fullName, hashedPass: hashedPass});
-  let user = db.getUser(body.username); 
+  model.insertUser({username: body.username, fullName: body.fullName, hashedPass: hashedPass});
+  let user = model.getUser(body.username); 
 
   //send back auth tokens
   let cookieToken = auth.cookieAuth.mkToken(user.username);
@@ -108,7 +109,7 @@ server.post("/login", jsonParse, (req, res, next) => {
     return next("password must contain one or more lowercase letters or numbers only.");
   }
 
-  let user = db.getUser(body.username); 
+  let user = model.getUser(body.username); 
 
   if (!auth.verifyPassword(user.hashedPass, body.password)) {
     return next("username or password does not match our records.");
@@ -141,13 +142,15 @@ server.get("/user", jsonParse, (req, res, next) => {
   let bearerToken = bearerTokenFromReq(req);
   let username = auth.bearerAuth.username(bearerToken)
   if (username){
-    let user = db.getUser(username);
+    let user = model.getUser(username);
 
-    let followees = _.map(_.filter(db.getFollow(username), r => r.status == 'active'), r => r.followee);
-    let pendingFollowees = _.map(_.filter(db.getFollow(username), r => r.status == 'pending'), r => r.followee);
+    let followees = _.map(_.filter(model.getFollow(username), r => {
+      return r.status == 'active'
+    }), r => r.followee);
+    let pendingFollowees = _.map(_.filter(model.getFollow(username), r => r.status == 'pending'), r => r.followee);
 
-    let followers = _.map(_.filter(db.getFollowByFollowee(username), r => r.status == 'active'), r => r.follower);
-    let pendingFollowers = _.map(_.filter(db.getFollowByFollowee(username), r => r.status == 'pending'), r => r.follower);
+    let followers = _.map(_.filter(model.getFollowByFollowee(username), r => r.status == 'active'), r => r.follower);
+    let pendingFollowers = _.map(_.filter(model.getFollowByFollowee(username), r => r.status == 'pending'), r => r.follower);
 
     res.json({user: _.assign(_.omit(user, 'hashedPass'), {
       followees: followees,
@@ -165,7 +168,7 @@ server.get("/profile", jsonParse, (req, res, next) => {
   let bearerToken = bearerTokenFromReq(req);
   let username = auth.bearerAuth.username(bearerToken)
   if (username && (username == query.username || true)){
-    let profile = db.getProfile(query.username, username);
+    let profile = model.getProfile(query.username, username);
     res.json({profile: profile});
   } else {
     res.json({profile: null});
@@ -176,13 +179,13 @@ server.post("/follow", jsonParse, (req, res, next) => {
 
   let bearerToken = bearerTokenFromReq(req);
   let username = auth.bearerAuth.username(bearerToken)
-  let follower = db.getUser(username);
+  let follower = model.getUser(username);
 
   if (!follower) {
     return next("user must be logged in");
   }
   var body = req.body;
-  let followee = db.getUser(body.followee);
+  let followee = model.getUser(body.followee);
   if (!followee) {
     return next("followee does not exist");
   }
@@ -191,7 +194,7 @@ server.post("/follow", jsonParse, (req, res, next) => {
     return next("logged in user must be different from followee");
   }
 
-  db.insertFollow(follower.username, followee.username);
+  model.insertFollow(follower.username, followee.username);
   res.json({});
 
 });
@@ -200,12 +203,12 @@ server.post("/unfollow", jsonParse, (req, res, next) => {
 
   let bearerToken = bearerTokenFromReq(req);
   let username = auth.bearerAuth.username(bearerToken)
-  let follower = db.getUser(username);
+  let follower = model.getUser(username);
   if (!follower) {
     return next("user must be logged in");
   }
   var body = req.body;
-  let followee = db.getUser(body.followee);
+  let followee = model.getUser(body.followee);
   if (!followee) {
     return next("followee does not exist");
   }
@@ -214,7 +217,7 @@ server.post("/unfollow", jsonParse, (req, res, next) => {
     return next("logged in user must be different from followee");
   }
 
-  db.removeFollow(follower.username, followee.username);
+  model.removeFollow(follower.username, followee.username);
   res.json({});
 
 });
@@ -224,12 +227,12 @@ server.post("/acceptFollower", jsonParse, (req, res, next) => {
 
   let bearerToken = bearerTokenFromReq(req);
   let username = auth.bearerAuth.username(bearerToken)
-  let followee = db.getUser(username);
+  let followee = model.getUser(username);
   if (!followee) {
     return next("user must be logged in");
   }
   var body = req.body;
-  let follower = db.getUser(body.follower);
+  let follower = model.getUser(body.follower);
   if (!follower) {
     return next("follower does not exist");
   }
@@ -238,7 +241,7 @@ server.post("/acceptFollower", jsonParse, (req, res, next) => {
     return next("logged in user must be different from followee");
   }
 
-  db.activateFollow(follower.username, followee.username);
+  model.activateFollow(follower.username, followee.username);
   res.json({});
 
 });
@@ -247,12 +250,12 @@ server.post("/removeFollower", jsonParse, (req, res, next) => {
 
   let bearerToken = bearerTokenFromReq(req);
   let username = auth.bearerAuth.username(bearerToken)
-  let followee = db.getUser(username);
+  let followee = model.getUser(username);
   if (!followee) {
     return next("user must be logged in");
   }
   var body = req.body;
-  let follower = db.getUser(body.follower);
+  let follower = model.getUser(body.follower);
   if (!follower) {
     return next("follower does not exist");
   }
@@ -261,7 +264,7 @@ server.post("/removeFollower", jsonParse, (req, res, next) => {
     return next("logged in user must be different from followee");
   }
 
-  db.removeFollow(follower.username, followee.username);
+  model.removeFollow(follower.username, followee.username);
   res.json({});
 
 });
@@ -271,12 +274,12 @@ server.post("/deletepic", jsonParse, (req, res, next) => {
 
   let bearerToken = bearerTokenFromReq(req);
   let username = auth.bearerAuth.username(bearerToken)
-  let user = db.getUser(username);
+  let user = model.getUser(username);
   if (!user) {
     return next("user must be logged in");
   }
 
-  db.deleteUserPic(username);
+  model.deleteUserPic(username);
   res.json({});
 
 });
@@ -287,13 +290,13 @@ server.put("/picture", rawParse, function(req, res, next) {
 
   let bearerToken = bearerTokenFromReq(req);
   let username = auth.bearerAuth.username(bearerToken)
-  let user = db.getUser(username);
+  let user = model.getUser(username);
   if (!user) {
     return next("user must be logged in");
   }
 
   let data = req.body;
-  db.updateUserPic(username, data);
+  model.updateUserPic(username, data);
   res.json({});
 
 });
@@ -301,7 +304,7 @@ server.put("/picture", rawParse, function(req, res, next) {
 server.post("/note", jsonParse, (req, res, next) => {
   let bearerToken = bearerTokenFromReq(req);
   let username = auth.bearerAuth.username(bearerToken)
-  let user = db.getUser(username);
+  let user = model.getUser(username);
   if (!user) {
     return next("user must be logged in");
   }
@@ -310,12 +313,12 @@ server.post("/note", jsonParse, (req, res, next) => {
   let profileId = body.profileId;
   let textBody = body.textBody;
 
-  let follow = _.find(db.getFollow(username), r => r.followee == profileId);
+  let follow = _.find(model.getFollow(username), r => r.followee == profileId);
   if ((username != profileId) && (!follow || follow.status != 'active')) {
     return next("user must be the profile's user or be a follower of profile's user");
   } 
 
-  db.insertNote({profileId: profileId, textBody: textBody, author: username});
+  model.insertNote({profileId: profileId, textBody: textBody, author: username});
   res.json({});
 
 });
