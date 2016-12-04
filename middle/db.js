@@ -4,9 +4,29 @@ var fs = require('fs');
 var path = require('path');
 
 var syntax = require('./syntax');
+var partition = require('./partition');
 var bigTable = []; //simply a list of records, where each record has a family field (aka table);
 
-let insert = (family, attrs) => {
+var ring = require('./ring')
+var ipAddrList = ["one", "two", "three", "four"]; 
+var ipRing = ring.mk(ipAddrList);
+var partitionMap = _.fromPairs(_.map(ipAddrList, ipAddr => [ipAddr, partition.mk(ipAddr)]));
+
+let getPartitionsByIndex = index => {
+  if (index) {
+    console.log("index: " + index);
+    let ipAddr = ipRing.get(index);
+    console.log("found ipAddr: " + ipAddr);
+    return [partitionMap[ipAddr]];
+  } else {
+    return _.values(partitionMap);
+  }
+}
+
+let insert = (family, attrs, index) => {
+
+  let parts = getPartitionsByIndex(index);
+
   if (syntax.hasFamilySyntax(family)) {
     bigTable = _.concat(bigTable, [_.assign(attrs, {family: family})]);
     return true;
@@ -15,7 +35,7 @@ let insert = (family, attrs) => {
   } 
 };
 
-let update = (set, filter) => {
+let update = (set, filter, index) => {
   bigTable = _.map(bigTable, r => {
     if (filter(r)) {
       return set(r);
@@ -29,7 +49,7 @@ let update = (set, filter) => {
 //reduce: (k, v, v) -> v 
 ///
 //get: (->, ->) -> list of object
-let get = (map, reduce) => {
+let get = (map, reduce, index) => {
   let pairs = _.flatMap(bigTable, r => map(r)); 
 
   let loop = ps => {
@@ -53,7 +73,7 @@ let get = (map, reduce) => {
 };
 
 
-let remove = filter => {
+let remove = (filter, index) => {
   bigTable = _.filter(bigTable, r => !filter(r));
   return true;
 };
@@ -61,17 +81,17 @@ let remove = filter => {
 
 let tigerfaceFile = path.resolve(__dirname + '/../tigerface.json');
 
-let save = (() => {
+let save = index => {
   try {
     fs.writeFileSync(tigerfaceFile, JSON.stringify(bigTable));
     console.log("saved data");
   } catch(err) {
     console.log(err);
   }
-});
+};
 
 
-let load = (() => {
+let load = index => {
   try {
     let data = fs.readFileSync(tigerfaceFile, 'utf8');
     bigTable = JSON.parse(data);
@@ -79,7 +99,7 @@ let load = (() => {
   } catch(err) {
     console.log(err);
   }
-});
+};
 
 
 module.exports.insert = insert;

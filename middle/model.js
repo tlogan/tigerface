@@ -6,11 +6,11 @@ var path = require('path');
 let mk = db => {
 
   let insertUser = (user => {
-    return db.insert('user', user);
+    return db.insert('user', user, user.username);
   });
 
   let insertNote = (note => {
-    return db.insert('note', note);
+    return db.insert('note', note, note.profileId);
   });
 
 
@@ -18,21 +18,31 @@ let mk = db => {
 
     let kvObject = db.get(
       r => r.family == 'user' && r.username == username ? [ {k: username, v: r} ] : [],
-      (k, vs) => [{k: k, v: vs}]
+      (k, vs) => [{k: k, v: vs}],
+      username
     );
     let userList = kvObject[username];
 
     return _.size(userList) > 0 && userList[0];
   });
 
-  let getFollow = (follower => { 
 
+  let insertFollow = (follower, followee) => {
+    return db.insert('follow', {follower: follower, followee: followee, status: 'pending'}, follower);
+  };
+
+  let removeFollow = (follower, followee) => {
+    db.remove(r => (r.family == 'follow' && r.follower == follower && r.followee == followee), follower);
+    return true;
+  };
+
+  let getFollow = (follower => { 
     let kvObject = db.get(
       r => r.family == 'follow' && r.follower == follower ? [ {k: follower, v: r} ] : [],
-      (k, vs) => [{k: k, v: vs}]
+      (k, vs) => [{k: k, v: vs}],
+      follower
     );
     let followList = kvObject[follower];
-
     return _.size(followList) > 0 && followList;
   });
 
@@ -47,7 +57,7 @@ let mk = db => {
   };
 
 
-  //join together follows, and notes using db mapReduce api
+  //join together follows and notes using db mapReduce api
   //
   //should be equivalent to pseuodo sql:
   //select * 
@@ -76,7 +86,6 @@ let mk = db => {
         ));
 
         return _.map(filtNotes, un => ({k: k, v: filtNotes}));
-
     };
 
     let kvObject = db.get(map, reduce);
@@ -84,7 +93,6 @@ let mk = db => {
   };
 
   let getProfile = (profileUsername, reqUsername) => {
-
     let user = getUser(profileUsername);
     let notes = _.reverse(getNotes(profileUsername, reqUsername));
     let follow = _.find(getFollow(reqUsername), follow => (follow.followee == profileUsername));  
@@ -96,19 +104,11 @@ let mk = db => {
     };
   };
 
-  let insertFollow = (follower, followee) => {
-    return db.insert('follow', {follower: follower, followee: followee, status: 'pending'});
-  };
-
-  let removeFollow = (follower, followee) => {
-    db.remove(r => (r.family == 'follow' && r.follower == follower && r.followee == followee));
-    return true;
-  };
-
   let activateFollow = (follower, followee) => {
     db.update(
       r => _.assign(r, {status: 'active'}), 
-      r =>r.family == 'follow' && r.follower == follower && r.followee == followee
+      r => r.family == 'follow' && r.follower == follower && r.followee == followee,
+      follower
     );
     return true;
   };
@@ -116,14 +116,14 @@ let mk = db => {
 
 
   let deleteUserPic = username => {
-    db.update(r => _.omit(r, 'picture'), r => r.family == 'user' && r.username == username);
+    db.update(r => _.omit(r, 'picture'), r => r.family == 'user' && r.username == username, username);
     let file = path.resolve(__dirname + '/../front/pics/' + username + '.jpg');
     fs.unlinkSync(file);
   };
 
   let updateUserPic = (username, data) => {
     let picUrl = '/pics/' + username + '.jpg';
-    db.update(r => _.assign(r, {picture: picUrl}), r => r.family == 'user' && r.username == username);
+    db.update(r => _.assign(r, {picture: picUrl}), r => r.family == 'user' && r.username == username, username);
 
     let file = path.resolve(__dirname + '/../front' + picUrl);
     try {
