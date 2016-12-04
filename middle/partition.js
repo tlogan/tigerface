@@ -2,72 +2,62 @@
 var _ = require('lodash');
 var fs = require('fs');
 var path = require('path');
-
+var request = require('request');
 
 let mk = ipAddress => {
 
-  var bigTable = []; //simply a list of records, where each record has a family field (aka table);
+  let http = (url, reqBody) => {
+    let result = null;
+    q.spawn(function* () {
+      var df = q.defer();
+      request({
+        method: 'post',
+        uri: ipAddress + "/" + url,
+        body: reqBody,
+        json: true 
+      }, (error, response, resBody) => {
+        if (!error) {
+          if (response.statusCode == 200) {
+            df.resolve(resBody);
+          } else {
+            df.reject(resBody);
+          }
+        } else {
+          df.reject(resBody.errors);
+        }
+      }); 
+      result = yield df.promise;
+      console.log("http result: " + JSON.stringify(result));
+    });
+    return result;
+  };
 
   let insert = (family, attrs) => {
-    bigTable = _.concat(bigTable, [_.assign(attrs, {family: family})]);
-    return true;
+    return http('insert', {family: family, attrs: attrs});
   }
 
-  let update = (set, filter) => {
-    bigTable = _.map(bigTable, r => {
-      if (filter(r)) {
-        return set(r);
-      } else {
-        return r;
-      }
-    });
+  let update = (set, filter, env) => {
+    return http('update', {set: set + "", filter: filter + "", env: env});
   };
 
-  let flatMap = f => {
-    return _.flatMap(bigTable, f); 
+  let flatMap = (f, env) => {
+    return http('flatMap', {f: f + "", env: env});
   };
 
-  let reduce = (f, k, vs) => {
-    return f(k, vs);
+  let reduce = (f, k, vs, env) => {
+    return http('reduce', {f: f + "", k: k, vs: vs, env: env});
   };
 
   let remove = (filter) => {
-    bigTable = _.filter(bigTable, r => !filter(r));
-    return true;
+    return http('remove', {filter: filter + "", env: env});
   };
-
-  let tigerfaceFile = path.resolve(__dirname + '/../tigerface_' + ipAddress + '.json');
 
   let save = () => {
-    let fd = null;
-    try {
-      fd = fs.openSync(tigerfaceFile, 'w');
-      fs.writeFileSync(fd, JSON.stringify(bigTable, null, 2));
-      console.log("saved data");
-    } catch(err) {
-      console.log(err);
-    } finally {
-      if (fd != null) {
-        fs.closeSync(fd);
-      }
-    }
+    return http('save', {});
   };
 
-
   let load = () => {
-    let fd = null;
-    try {
-      fd = fs.openSync(tigerfaceFile, 'r');
-      let data = fs.readFileSync(fd, 'utf8');
-      bigTable = JSON.parse(data);
-      console.log("loaded data");
-    } catch(err) {
-      console.log(err);
-    } finally {
-      if (fd != null) {
-        fs.closeSync(fd);
-      }
-    }
+    return http('load', {});
   };
 
 

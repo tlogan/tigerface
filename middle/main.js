@@ -2,7 +2,6 @@
 var express = require('express');
 var server = express();
 var path = require('path');
-var request = require('request');
 var server = express();
 var cookieParser = require('cookie-parser')
 var bodyParser = require('body-parser');
@@ -12,11 +11,13 @@ var path = require('path');
 var auth = require('./auth');
 
 var syntax = require('./syntax');
-var db = require('./db');
 var model = require('./model').mk(db);
 
 var jsonParse = bodyParser.json();
 var rawParse = bodyParser.raw({type: "*/*", limit: '4000kb'});
+
+let ipAddrlist = process.argv; 
+var db = require('./db').mk(ipAddrList);
 
 server.use(cookieParser());
 
