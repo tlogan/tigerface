@@ -1,0 +1,27 @@
+[
+  {
+    "username": "alice",
+    "fullName": "Alice Roberts",
+    "hashedPass": {
+      "hash": "JauEVTBTM63jVqCJOoz+3b7xtrqZP5SrrJot0l0doYEBRC8LWFqjZReVXCoQVvMZMR+pEri8Qh0OQfuahP72N4dM",
+      "salt": "aN239CIy4GuA4MyerB6tgwaj3STIlb7UJRWaZshSZEoE6POmbEff09X7tlQQEMKByF",
+      "keyLength": 66,
+      "hashMethod": "pbkdf2",
+      "workUnits": 60
+    },
+    "family": "user",
+    "picture": "/pics/alice.jpg"
+  },
+  {
+    "profileId": "alice",
+    "textBody": "YES!",
+    "author": "alice",
+    "family": "note"
+  },
+  {
+    "follower": "alice",
+    "followee": "thomas",
+    "status": "active",
+    "family": "follow"
+  }
+]

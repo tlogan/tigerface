@@ -5,7 +5,6 @@ var path = require('path');
 
 var syntax = require('./syntax');
 var partition = require('./partition');
-var bigTable = []; //simply a list of records, where each record has a family field (aka table);
 
 var ring = require('./ring')
 var ipAddrList = ["one", "two", "three", "four"]; 
@@ -24,24 +23,19 @@ let getPartitionsByIndex = index => {
 }
 
 let insert = (family, attrs, index) => {
-
   let parts = getPartitionsByIndex(index);
-
   if (syntax.hasFamilySyntax(family)) {
-    bigTable = _.concat(bigTable, [_.assign(attrs, {family: family})]);
-    return true;
+    let r = Math.floor(Math.random() * _.size(parts));
+    return parts[r].insert(family, attrs);
   } else {
     return false;
   } 
 };
 
 let update = (set, filter, index) => {
-  bigTable = _.map(bigTable, r => {
-    if (filter(r)) {
-      return set(r);
-    } else {
-      return r;
-    }
+  let parts = getPartitionsByIndex(index);
+  _.each(parts, p => {
+    p.update(set, filter);
   });
 };
 
@@ -50,14 +44,21 @@ let update = (set, filter, index) => {
 ///
 //get: (->, ->) -> list of object
 let get = (map, reduce, index) => {
-  let pairs = _.flatMap(bigTable, r => map(r)); 
+
+  let parts = getPartitionsByIndex(index);
+  let partsSize = _.size(parts);
+
+  let pairs = _.flatMap(parts, p => p.flatMap(map));
+
 
   let loop = ps => {
-    let groups = _.groupBy(ps, p => p.k);
-    let newPairs = _.flatMap(groups, (ps, k) => {
-      let vs = _.map(ps, p => p.v);
-      return reduce(k, vs);
-    }); 
+    let groups = _.map(_.groupBy(ps, p => p.k), (ps, k) => ({k: k, vs: _.map(ps, p => p.v)}));
+
+    let newPairs = _.flatMap(groups, (g, i) => {
+      let part = parts[i % partsSize];
+      return part.reduce(reduce, g.k, g.vs);
+    });
+
     //if there are no more duplicate keys then stop; otherwise reduce again 
     if (_.size(_.uniq(_.map(newPairs, p => p.k))) <= _.size(newPairs)) {
       return newPairs;
@@ -74,31 +75,26 @@ let get = (map, reduce, index) => {
 
 
 let remove = (filter, index) => {
-  bigTable = _.filter(bigTable, r => !filter(r));
-  return true;
+  let parts = getPartitionsByIndex(index);
+  _.each(parts, p => {
+    p.remove(filter);
+  });
 };
 
 
-let tigerfaceFile = path.resolve(__dirname + '/../tigerface.json');
-
 let save = index => {
-  try {
-    fs.writeFileSync(tigerfaceFile, JSON.stringify(bigTable));
-    console.log("saved data");
-  } catch(err) {
-    console.log(err);
-  }
+  let parts = getPartitionsByIndex(index);
+  _.each(parts, p => {
+    p.save();
+  });
 };
 
 
 let load = index => {
-  try {
-    let data = fs.readFileSync(tigerfaceFile, 'utf8');
-    bigTable = JSON.parse(data);
-    console.log("loaded data");
-  } catch(err) {
-    console.log(err);
-  }
+  let parts = getPartitionsByIndex(index);
+  _.each(parts, p => {
+    p.load();
+  });
 };
 
 
@@ -109,8 +105,3 @@ module.exports.remove = remove;
 
 module.exports.save = save;
 module.exports.load = load;
-
-
-
-
-
