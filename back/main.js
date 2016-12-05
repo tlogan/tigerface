@@ -13,8 +13,8 @@ let port = _.drop(process.argv, 2)[0] || 5555;
 let part = partition.mk(port);
 
 
-let evalF = fStr => {
-  let f = eval("var fn = " + invitation.process + "; fn;");
+let evalF = fstr => {
+  let f = eval("var fn = " + fstr + "; fn;");
   return f;
 }
 

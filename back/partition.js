@@ -12,17 +12,18 @@ let mk = name => {
 
   let insert = (family, attrs) => {
     bigTable = _.concat(bigTable, [_.assign(attrs, {family: family})]);
-    return true;
+    return [];
   }
 
   let update = (set, filter, env) => {
     bigTable = _.map(bigTable, r => {
       if (filter(r, env)) {
-        return set(r);
+        return set(r, env);
       } else {
         return r;
       }
     });
+    return [];
   };
 
   let flatMap = (f, env) => {
@@ -35,7 +36,7 @@ let mk = name => {
 
   let remove = (filter, env) => {
     bigTable = _.filter(bigTable, r => !filter(r, env));
-    return true;
+    return [];
   };
 
   let save = () => {
@@ -51,6 +52,7 @@ let mk = name => {
         fs.closeSync(fd);
       }
     }
+    return [];
   };
 
 
@@ -68,6 +70,7 @@ let mk = name => {
         fs.closeSync(fd);
       }
     }
+    return [];
   };
 
 

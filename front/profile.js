@@ -94,13 +94,17 @@ $(function() {
     },
 
     user: function(user) {
-      if (state.has('profile')) { //ready to render when both user and profile have been retrieved
+       console.log(JSON.stringify(state.get('profile')));
+      if (state.get('profile')) { //ready to render when both user and profile have been retrieved
         render(user, state.get('profile'));
       }
     },
 
     profile: function(profile) {
-      if (state.has('user')) { //ready to render when both user and profile have been retrieved
+      if (!profile) {
+        window.location = '/';
+      } 
+      if (profile && state.has('user')) { //ready to render when both user and profile have been retrieved
         render(state.get('user'), profile);
       }
     }

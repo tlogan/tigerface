@@ -15,8 +15,6 @@ let mk = db => {
 
 
   let getUser = (username => { 
-
-    console.log("getting user from db: " + db);
     let kvObject = db.get(
       (r, env) => r.family == 'user' && r.username == env.username ? [ {k: env.username, v: r} ] : [],
       (k, vs) => [{k: k, v: vs}],
@@ -45,7 +43,7 @@ let mk = db => {
     let kvObject = db.get(
       (r, env) => r.family == 'follow' && r.follower == env.follower ? [ {k: env.follower, v: r} ] : [],
       (k, vs) => [{k: k, v: vs}],
-      {follower: follwer},
+      {follower: follower},
       follower
     );
     let followList = kvObject[follower];
@@ -89,7 +87,7 @@ let mk = db => {
         let follows = _.filter(vs, v => v.family == 'follow');
 
         let filtNotes = _.filter(notes, n => (
-          n.author == env.reqUsername || _.find(follows, f => n.author == f.followee)
+          n.author == env.reqUsername || _.find(follows, f => n.author == f.followee && f.status == 'active')
         ));
 
         return _.map(filtNotes, un => ({k: k, v: filtNotes}));
@@ -104,39 +102,47 @@ let mk = db => {
 
   let getProfile = (profileUsername, reqUsername) => {
     let user = getUser(profileUsername);
-    let notes = _.reverse(getNotes(profileUsername, reqUsername));
-    let follow = _.find(getFollow(reqUsername), follow => (follow.followee == profileUsername));  
+    if (user) {
+      let notes = _.reverse(getNotes(profileUsername, reqUsername));
+      let follow = _.find(getFollow(reqUsername), follow => (follow.followee == profileUsername));  
 
-    return {
-      user: user,
-      followStatus: follow && follow.status,
-      notes: notes
-    };
+      return {
+        user: user,
+        followStatus: follow && follow.status,
+        notes: notes
+      };
+    } else {
+      return null;
+    }
   };
 
   let activateFollow = (follower, followee) => {
-    db.update(
-      r => _.assign(r, {status: 'active'}), 
-      r => r.family == 'follow' && r.follower == follower && r.followee == followee,
+    return db.update(
+      (r, env) => _.assign(r, {status: 'active'}), 
+      (r, env) => r.family == 'follow' && r.follower == env.follower && r.followee == env.followee,
+      {
+        follower: follower,
+        followee: followee,
+      },
       follower
     );
-    return true;
   };
 
 
-
   let deleteUserPic = username => {
-    db.update((r, env) => _.omit(r, 'picture'), r => r.family == 'user' && r.username == env.username, {
+    db.update((r, env) => _.omit(r, 'picture'), (r, env) => r.family == 'user' && r.username == env.username, {
       username: username
     }, username);
     let file = path.resolve(__dirname + '/../front/pics/' + username + '.jpg');
     fs.unlinkSync(file);
+    return {};
   };
 
   let updateUserPic = (username, data) => {
     let picUrl = '/pics/' + username + '.jpg';
-    db.update((r, env) => _.assign(r, {picture: picUrl}), r => r.family == 'user' && r.username == env.username, {
-      username: username
+    db.update((r, env) => _.assign(r, {picture: env.picUrl}), (r, env) => r.family == 'user' && r.username == env.username, {
+      username: username,
+      picUrl: picUrl
     }, username);
 
     let file = path.resolve(__dirname + '/../front' + picUrl);
@@ -146,8 +152,8 @@ let mk = db => {
     } catch(err) {
       console.log(err);
     }
+    return {};
   };
-
 
   return {
     insertUser: insertUser,

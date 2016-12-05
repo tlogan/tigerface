@@ -1,1 +1,45 @@
-[]
+[
+  {
+    "username": "thomas",
+    "fullName": "Thomas Logan",
+    "hashedPass": {
+      "hash": "SEyfRaak34NB/EfRZ92F+bAsJxeq7nsiIGRFBY+H+0cikfXlibiS7mWhTziFCJH+m5RsRK0XeFzhJqqO87Xlqr/F",
+      "salt": "NPw7h1JiKtSZw7gY64XzLORLpg0VOr5hZta02kqbR5ujo9j53emj53lLg0Q6G2I9Ut",
+      "keyLength": 66,
+      "hashMethod": "pbkdf2",
+      "workUnits": 60
+    },
+    "family": "user",
+    "picture": "/pics/thomas.jpg"
+  },
+  {
+    "profileId": "thomas",
+    "textBody": "hi me",
+    "author": "thomas",
+    "family": "note"
+  },
+  {
+    "profileId": "thomas",
+    "textBody": "adsf",
+    "author": "thomas",
+    "family": "note"
+  },
+  {
+    "username": "alice",
+    "fullName": "Alice Roberts",
+    "hashedPass": {
+      "hash": "IeJQ5mlnjgibZA4Srd8Dr/tVpMiYV3Dq53K5x9xB/AQoGlNZSuNiJ4iJuTpNlvXPTwi2uURxOM7rkQjH792l08SL",
+      "salt": "VUZ3reo9CUjbEI1PlG3LzM2pN36FmgYaaamZGlVoFqlYc3Hhngj9TPFmpgUxm04KN7",
+      "keyLength": 66,
+      "hashMethod": "pbkdf2",
+      "workUnits": 60
+    },
+    "family": "user"
+  },
+  {
+    "follower": "thomas",
+    "followee": "alice",
+    "status": "pending",
+    "family": "follow"
+  }
+]

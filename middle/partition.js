@@ -10,7 +10,12 @@ let mk = ipAddress => {
     let uri = "http://" + ipAddress + "/" + url;
     console.log("uri: " + uri);
     let response = request('POST', uri, {json: reqBody});
-    return JSON.parse(response.getBody('utf8'));
+    try {
+      let parsed =  JSON.parse(response.getBody('utf8'));
+      return parsed;
+    } catch(err) {
+      return null;
+    }
   };
 
   let insert = (family, attrs) => {
@@ -29,7 +34,7 @@ let mk = ipAddress => {
     return http('reduce', {f: f + "", k: k, vs: vs, env: env});
   };
 
-  let remove = (filter) => {
+  let remove = (filter, env) => {
     return http('remove', {filter: filter + "", env: env});
   };
 
