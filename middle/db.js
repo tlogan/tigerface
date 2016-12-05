@@ -5,6 +5,7 @@ var path = require('path');
 
 var syntax = require('./syntax');
 var partition = require('./partition');
+var q = require('q');
 
 var ring = require('./ring')
 
@@ -49,27 +50,31 @@ let mk = ipAddrList => {
     let parts = getPartitionsByIndex(index);
     let partsSize = _.size(parts);
 
-    let pairs = _.flatMap(parts, part => part.flatMap(map, env));
-
     let loop = ps => {
       let groups = _.map(_.groupBy(ps, p => p.k), (ps, k) => ({k: k, vs: _.map(ps, p => p.v)}));
 
-      let newPairs = _.flatMap(groups, (g, i) => {
+      let newPairsP = q.all(_.map(groups, (g, i) => {
         let part = parts[i % partsSize];
         return part.reduce(reduce, g.k, g.vs, env);
+      })).then(_.flatten);
+
+      return newPairsP.then(newPairs => {
+
+        //if there are no more duplicate keys then stop; otherwise reduce again 
+        if (_.size(_.uniq(_.map(newPairs, p => p.k))) <= _.size(newPairs)) {
+          return newPairs;
+        } else {
+          return loop(newPairs);
+        }
       });
+    };
 
-      //if there are no more duplicate keys then stop; otherwise reduce again 
-      if (_.size(_.uniq(_.map(newPairs, p => p.k))) <= _.size(newPairs)) {
-        return newPairs;
-      } else {
-        loop(newPairs);
-      }
-    }
-
-    let newPairs = loop(pairs);
-    let o =  _.fromPairs(_.map(newPairs, p => ([p.k, p.v])));
-    return o;
+    let pairsP = q.all(_.map(parts, part => part.flatMap(map, env))).then(_.flatten);
+    return pairsP.then(pairs => 
+      loop(pairs)
+    ).then(newPairs =>
+      _.fromPairs(_.map(newPairs, p => ([p.k, p.v])))
+    );
 
   };
 

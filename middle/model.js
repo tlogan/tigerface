@@ -2,6 +2,7 @@
 var _ = require('lodash');
 var fs = require('fs');
 var path = require('path');
+var q = require('q');
 
 let mk = db => {
 
@@ -15,15 +16,15 @@ let mk = db => {
 
 
   let getUser = (username => { 
-    let kvObject = db.get(
+    return db.get(
       (r, env) => r.family == 'user' && r.username == env.username ? [ {k: env.username, v: r} ] : [],
-      (k, vs) => [{k: k, v: vs}],
+      (k, vs, env) => [{k: k, v: vs}],
       {username: username},
       username
-    );
-    let userList = kvObject[username];
-
-    return _.size(userList) > 0 && userList[0];
+    ).then(kvObject => {
+      let userList = kvObject[username];
+      return _.size(userList) > 0 && userList[0];
+    });
   });
 
 
@@ -40,25 +41,26 @@ let mk = db => {
   };
 
   let getFollow = (follower => { 
-    let kvObject = db.get(
+    return db.get(
       (r, env) => r.family == 'follow' && r.follower == env.follower ? [ {k: env.follower, v: r} ] : [],
       (k, vs) => [{k: k, v: vs}],
       {follower: follower},
       follower
-    );
-    let followList = kvObject[follower];
-    return _.size(followList) > 0 && followList;
+    ).then(kvObject => {
+      let followList = kvObject[follower];
+      return _.size(followList) > 0 && followList;
+    });
   });
 
   let getFollowByFollowee = followee => { 
-    let kvObject = db.get(
+    return db.get(
       (r, env) => r.family == 'follow' && r.followee == env.followee ? [ {k: env.followee, v: r} ] : [],
       (k, vs) => [{k: k, v: vs}],
       {followee: followee}
-    );
-    let followList = kvObject[followee];
-
-    return _.size(followList) > 0 && followList;
+    ).then(kvObject => {
+      let followList = kvObject[followee];
+      return _.size(followList) > 0 && followList;
+    });
   };
 
 
@@ -93,27 +95,29 @@ let mk = db => {
         return _.map(filtNotes, un => ({k: k, v: filtNotes}));
     };
 
-    let kvObject = db.get(map, reduce, {
+    return db.get(map, reduce, {
       profileUsername: profileUsername, 
       reqUsername: reqUsername
-    });
-    return _.flatten(_.values(kvObject));
+    }).then(kvObject => _.flatten(_.values(kvObject)));
   };
 
   let getProfile = (profileUsername, reqUsername) => {
-    let user = getUser(profileUsername);
-    if (user) {
-      let notes = _.reverse(getNotes(profileUsername, reqUsername));
-      let follow = _.find(getFollow(reqUsername), follow => (follow.followee == profileUsername));  
-
-      return {
-        user: user,
-        followStatus: follow && follow.status,
-        notes: notes
-      };
-    } else {
-      return null;
-    }
+    return q.all([
+      getUser(profileUsername),
+      getNotes(profileUsername, reqUsername),
+      getFollow(reqUsername), follow => (follow.followee == profileUsername) 
+    ]).spread((user, notes, follows) => {
+      if (user) {
+        let follow = _.find(follows, follow => (follow.followee == profileUsername));  
+        return {
+          user: user,
+          followStatus: follow && follow.status,
+          notes: _.reverse(notes)
+        };
+      } else {
+        return q.fcall(() => null);
+      }
+    });
   };
 
   let activateFollow = (follower, followee) => {

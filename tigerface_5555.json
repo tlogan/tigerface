@@ -41,5 +41,17 @@
     "followee": "alice",
     "status": "pending",
     "family": "follow"
+  },
+  {
+    "username": "thomas",
+    "fullName": "Thomas Logan",
+    "hashedPass": {
+      "hash": "6Z0+PpgxQ4/0klQUA/sTHXKxQKKOdK5t5YBw8mhc/bDh+Vl8SWIH/2E/BDPm62kNPjjj26hMTEkYKRgszgY5zGT8",
+      "salt": "ddv3x4u2GtkxBjxkmSKapP0j68KR33vFVYoE7yevVIKhiT5P9ASZcGdokyUqDRIbBN",
+      "keyLength": 66,
+      "hashMethod": "pbkdf2",
+      "workUnits": 60
+    },
+    "family": "user"
   }
 ]
