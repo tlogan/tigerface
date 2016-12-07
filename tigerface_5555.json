@@ -34,13 +34,8 @@
       "hashMethod": "pbkdf2",
       "workUnits": 60
     },
-    "family": "user"
-  },
-  {
-    "follower": "thomas",
-    "followee": "alice",
-    "status": "pending",
-    "family": "follow"
+    "family": "user",
+    "picture": "/pics/alice.jpg"
   },
   {
     "username": "thomas",
@@ -52,6 +47,37 @@
       "hashMethod": "pbkdf2",
       "workUnits": 60
     },
+    "family": "user",
+    "picture": "/pics/thomas.jpg"
+  },
+  {
+    "profileId": "thomas",
+    "textBody": "another post",
+    "author": "thomas",
+    "family": "note"
+  },
+  {
+    "follower": "thomas",
+    "followee": "alice",
+    "status": "pending",
+    "family": "follow"
+  },
+  {
+    "username": "helix",
+    "fullName": "Helix Logan",
+    "hashedPass": {
+      "hash": "EQ3QGIyrzK2WKrhYkDk/7P23SVzj3OZpc9YpQZzsUNvgRrT0ESlxu2TNzkKuxV12GjKmP0VDTZpIl5Hu0bOkCoWK",
+      "salt": "ChDd3Dl5Is6HRlGNSaZdZgZCfiE742xAhzISlD0kpMDyAoIE5TDgiOZtHccT4bzEY8",
+      "keyLength": 66,
+      "hashMethod": "pbkdf2",
+      "workUnits": 60
+    },
     "family": "user"
+  },
+  {
+    "follower": "helix",
+    "followee": "thomas",
+    "status": "active",
+    "family": "follow"
   }
 ]

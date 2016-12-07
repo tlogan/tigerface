@@ -331,12 +331,14 @@ server.post("/note", jsonParse, (req, res, next) => {
 
   q.all([
     model.getUser(username),
-    _.find(model.getFollow(username), r => r.followee == profileId)
-  ]).spread((user, follow) => {
+    model.getFollow(username)
+  ]).spread((user, follows) => {
 
+    let follow = _.find(follows, r => r.followee == profileId);
     if (!user) {
       return next("user must be logged in");
     }
+    console.log("follow: " + JSON.stringify(follow));
     if ((username != profileId) && (!follow || follow.status != 'active')) {
       return next("user must be the profile's user or be a follower of profile's user");
     } 
