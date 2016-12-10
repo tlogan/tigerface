@@ -5,6 +5,10 @@
       "one": {
         "master": "localhost:5556", 
         "slave": "localhost:5557"
+      },
+      "two": {
+        "master": "localhost:5558", 
+        "slave": "localhost:5559"
       }
     }
   }
