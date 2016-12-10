@@ -32,6 +32,23 @@ $(function() {
         },
         view.div().append(
 
+          view.div({id: 'suggestions_heading', class: 'heading'}).text("Suggestions"),
+          view.div({id: 'suggestions_list'}).html((function() {
+            return _.map(user.suggestions, function(id) {
+              return view.div().append(
+                view.navlink({class: 'suggestion', text: id, href: '/profile/' + id}), 
+                view.button({class: 'suggestion_follow_button', text: 'Follow'}).click(function() {
+                  var token = state.get('token');
+                  common.authPost(token)('/follow', {followee: id}).then(function() {
+                    common.authGet(token)('/user', {}).then(function(result) {
+                      state.update('user', result.user);
+                    });
+                  });
+                }) 
+              )
+            });
+          }())),
+
           view.div({id: 'followees_heading', class: 'heading'}).text("Followees"),
           view.div({id: 'followees_list'}).html((function() {
             return _.map(user.followees, function(id) {

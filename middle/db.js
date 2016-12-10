@@ -17,10 +17,8 @@ let mk = clusterObj => {
 
   let getPartitionsByIndex = index => {
     if (index) {
-      console.log("index: " + index);
-      let ipAddr = ipRing.get(index);
-      console.log("found ipAddr: " + ipAddr);
-      return [partitionMap[ipAddr]];
+      let name = ipRing.get(index);
+      return [partitionMap[name]];
     } else {
       return _.values(partitionMap);
     }

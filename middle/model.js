@@ -27,6 +27,35 @@ let mk = db => {
     });
   });
 
+  let getSuggestions = (username => { 
+
+    let map = (r, env) => {
+      if (r.family == 'user' && r.username != env.username) {
+        return [ {k: r.username, v: r} ];
+      } else if (r.family == 'follow' && (r.follower == env.username)) {
+        return [ {k: r.followee, v: 'exclude'} ];
+      } else if (r.family == 'follow' && (r.followee == env.username)) {
+        return [ {k: r.follower, v: 'exclude'} ];
+      } else {
+        return [];
+      }
+    };
+
+    let reduce = (k, vs, env) => {
+      let excludes = _.filter(vs, v => v == 'exclude');
+      if (_.size(excludes) > 0) {
+        return [];
+      } else {
+        return [{k: k, v: vs}];
+      }
+    };
+
+    return db.get(map, reduce, {
+      username: username, 
+    }).then(kvObject => _.flatten(_.values(kvObject)));
+
+  });
+
 
   let insertFollow = (follower, followee) => {
     return db.insert('follow', {follower: follower, followee: followee, status: 'pending'}, follower);
@@ -105,14 +134,14 @@ let mk = db => {
     return q.all([
       getUser(profileUsername),
       getNotes(profileUsername, reqUsername),
-      getFollow(reqUsername), follow => (follow.followee == profileUsername) 
+      getFollow(reqUsername)
     ]).spread((user, notes, follows) => {
       if (user) {
         let follow = _.find(follows, follow => (follow.followee == profileUsername));  
         return {
           user: user,
           followStatus: follow && follow.status,
-          notes: _.reverse(notes)
+          notes: _.reverse(notes),
         };
       } else {
         return q.fcall(() => null);
@@ -170,7 +199,8 @@ let mk = db => {
     updateUserPic: updateUserPic,
     insertNote: insertNote,
     getFollow: getFollow,
-    getFollowByFollowee: getFollowByFollowee
+    getFollowByFollowee: getFollowByFollowee,
+    getSuggestions: getSuggestions
   };
 
 }; 

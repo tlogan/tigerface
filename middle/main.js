@@ -154,8 +154,9 @@ server.get("/user", jsonParse, (req, res, next) => {
     q.all([
       model.getUser(username),
       model.getFollow(username), 
-      model.getFollowByFollowee(username)
-    ]).spread((user, follows1, follows2) => {
+      model.getFollowByFollowee(username),
+      model.getSuggestions(username)
+    ]).spread((user, follows1, follows2, suggestions) => {
       let followees = _.map(_.filter(follows1, r => r.status == 'active'), r => r.followee);
       let pendingFollowees = _.map(_.filter(follows1, r => r.status == 'pending'), r => r.followee);
 
@@ -166,7 +167,8 @@ server.get("/user", jsonParse, (req, res, next) => {
         followees: followees,
         pendingFollowees: pendingFollowees,
         followers: followers,
-        pendingFollowers: pendingFollowers
+        pendingFollowers: pendingFollowers,
+        suggestions: _.map(suggestions, s => s.username)
       })});
     }).catch(next);
   } else {
