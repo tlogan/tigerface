@@ -6,6 +6,7 @@
   "dependencies": {
     "body-parser": "^1.15.2",
     "buffer-equal-constant-time": "^1.0.1",
+    "config": "^1.24.0",
     "cookie-parser": "^1.4.3",
     "express": "^4.14.0",
     "install": "^0.8.2",

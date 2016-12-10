@@ -46,6 +46,7 @@ let mk = name => {
       fs.writeFileSync(fd, JSON.stringify(bigTable, null, 2));
       console.log("saved data");
     } catch(err) {
+      console.log("save error");
       console.log(err);
     } finally {
       if (fd != null) {
@@ -64,7 +65,8 @@ let mk = name => {
       bigTable = JSON.parse(data);
       console.log("loaded data");
     } catch(err) {
-      console.log(err);
+      //console.log("load error");
+      //console.log(err);
     } finally {
       if (fd != null) {
         fs.closeSync(fd);

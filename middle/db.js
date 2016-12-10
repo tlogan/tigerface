@@ -9,9 +9,11 @@ var q = require('q');
 
 var ring = require('./ring')
 
-let mk = ipAddrList => {
-  var ipRing = ring.mk(ipAddrList);
-  var partitionMap = _.fromPairs(_.map(ipAddrList, ipAddr => [ipAddr, partition.mk(ipAddr)]));
+let mk = clusterObj => {
+
+  let clusterNames = _.keys(clusterObj);
+  var ipRing = ring.mk(clusterNames);
+  var partitionMap = _.fromPairs(_.map(clusterObj, (ipObj, name) => [name, partition.mk(ipObj.master, ipObj.slave)]));
 
   let getPartitionsByIndex = index => {
     if (index) {

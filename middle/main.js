@@ -15,8 +15,12 @@ var syntax = require('./syntax');
 var jsonParse = bodyParser.json();
 var rawParse = bodyParser.raw({type: "*/*", limit: '4000kb'});
 
-let ipAddrList = _.drop(process.argv, 2); 
-var db = require('./db').mk(ipAddrList);
+var config = require('config').get("middle");
+let clusterObj = config.clusters; 
+console.log("port: " + config.port);
+console.log("clusterObj: " + JSON.stringify(clusterObj));
+
+var db = require('./db').mk(clusterObj);
 var model = require('./model').mk(db);
 
 server.use(cookieParser());

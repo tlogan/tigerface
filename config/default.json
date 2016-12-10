@@ -1,0 +1,11 @@
+{
+  "middle": {
+    "port": "3000",
+    "clusters": {
+      "one": {
+        "master": "localhost:5556", 
+        "slave": "localhost:5557"
+      }
+    }
+  }
+}
