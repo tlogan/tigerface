@@ -1,6 +1,11 @@
 # tigerface
 
-### run the back partition servers 
+### run the middle server and back partition servers 
+```bash
+node start.js 
+```
+
+### run just the back partition servers 
 the first argument is the port for the server 
 ```bash
 node back/main.js 5556 
@@ -9,7 +14,7 @@ node back/main.js 5558
 node back/main.js 5559
 ```
 
-### run the middle server
+### run just the middle server
 ```bash
 node middle/main.js
 ```
