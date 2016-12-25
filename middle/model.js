@@ -178,6 +178,8 @@ let mk = db => {
       picUrl: picUrl
     }, username);
 
+    let dir = path.resolve(__dirname + '/../front/pics');
+    try { fs.mkdirSync(dir); } catch(err) {}
     let file = path.resolve(__dirname + '/../front' + picUrl);
     try {
       fs.writeFileSync(file, data);
